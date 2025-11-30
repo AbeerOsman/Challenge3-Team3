@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		81FDB5982ED7892400440B88 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 81FDB5972ED7892400440B88 /* FirebaseAuth */; };
+		81FDB59A2ED7892400440B88 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 81FDB5992ED7892400440B88 /* FirebaseFirestore */; };
+		81FDB59E2ED78A4200440B88 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 81FDB59D2ED78A4200440B88 /* GoogleService-Info.plist */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		81FDB57A2ED77EEA00440B88 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +33,7 @@
 		81FDB56C2ED77EE800440B88 /* Challenge3-Team3.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Challenge3-Team3.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		81FDB5792ED77EEA00440B88 /* Challenge3-Team3Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Challenge3-Team3Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		81FDB5832ED77EEA00440B88 /* Challenge3-Team3UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Challenge3-Team3UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		81FDB59D2ED78A4200440B88 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -52,6 +59,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				81FDB5982ED7892400440B88 /* FirebaseAuth in Frameworks */,
+				81FDB59A2ED7892400440B88 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -79,6 +88,7 @@
 				81FDB57C2ED77EEA00440B88 /* Challenge3-Team3Tests */,
 				81FDB5862ED77EEA00440B88 /* Challenge3-Team3UITests */,
 				81FDB56D2ED77EE800440B88 /* Products */,
+				81FDB59D2ED78A4200440B88 /* GoogleService-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -112,6 +122,8 @@
 			);
 			name = "Challenge3-Team3";
 			packageProductDependencies = (
+				81FDB5972ED7892400440B88 /* FirebaseAuth */,
+				81FDB5992ED7892400440B88 /* FirebaseFirestore */,
 			);
 			productName = "Challenge3-Team3";
 			productReference = 81FDB56C2ED77EE800440B88 /* Challenge3-Team3.app */;
@@ -195,6 +207,9 @@
 			);
 			mainGroup = 81FDB5632ED77EE800440B88;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				81FDB5962ED7892400440B88 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 81FDB56D2ED77EE800440B88 /* Products */;
 			projectDirPath = "";
@@ -212,6 +227,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				81FDB59E2ED78A4200440B88 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -395,6 +411,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = F8N3463A3R;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -426,6 +443,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = F8N3463A3R;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -570,6 +588,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		81FDB5962ED7892400440B88 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.6.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		81FDB5972ED7892400440B88 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 81FDB5962ED7892400440B88 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		81FDB5992ED7892400440B88 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 81FDB5962ED7892400440B88 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 81FDB5642ED77EE800440B88 /* Project object */;
 }
