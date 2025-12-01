@@ -8,8 +8,9 @@ import SwiftUI
 
 // MARK: - Main View
 struct ChoiceView: View {
-    @StateObject private var viewModel = ChoiceViewModel()
-    
+    @StateObject private var authViewModel = AuthViewModel()
+    @StateObject private var choiceViewModel = ChoiceViewModel()
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -24,21 +25,10 @@ struct ChoiceView: View {
                     Spacer()
                     
                     ButtonsView(
-                        offerAction: {
-                            //   navigation
-                            if let option = viewModel.options.first(where: { $0.type == .offerSupport }) {
-                                viewModel.handleTap(on: option)
-                            } else {
-                                // Fallback: set directly
-                                viewModel.selectedChoice = .offerSupport
-                            }
-                        },
-                        needInterpreterAction: {
-                            if let option = viewModel.options.first(where: { $0.type == .needInterpreter }) {
-                                viewModel.handleTap(on: option)
-                            } else {
-                                viewModel.selectedChoice = .needInterpreter
-                            }
+                        options: choiceViewModel.options,
+                        onSelection: { option in
+                            choiceViewModel.handleTap(on: option)
+                            authViewModel.saveRole(for: option.type)
                         }
                     )
                     
@@ -46,15 +36,6 @@ struct ChoiceView: View {
                 }
                 .padding()
             }
-            //  enum to destinations
-            .navigationDestination(item: $viewModel.selectedChoice, destination: { choice in
-                switch choice {
-                case .offerSupport:
-                    TranslatorProfileView()
-                case .needInterpreter:
-                    AllTranslatorsView()
-                }
-            })
         }
     }
 }
@@ -84,48 +65,58 @@ struct ChoiceHeaderView: View {
 
 // MARK: - Buttons container
 struct ButtonsView: View {
-    let offerAction: () -> Void
-    let needInterpreterAction: () -> Void
+    let options: [ChoiceOption]
+    let onSelection: (ChoiceOption) -> Void
     
     var body: some View {
         HStack(spacing: 20) {
-            ChoiceButton(
-                title: "I want to offer\nsupport",
-                action: offerAction
-            )
-            
-            ChoiceButton(
-                title: "I need a sign\nlanguage interpreter",
-                action: needInterpreterAction
-            )
+            ForEach(options) { option in
+                NavigationLink {
+                    destination(for: option.type)
+                } label: {
+                    ChoiceButton(title: option.title)
+                }
+                .simultaneousGesture(
+                    TapGesture().onEnded {
+                        onSelection(option)
+                    }
+                )
+            }
         }
         .padding(.horizontal)
+    }
+    
+    @ViewBuilder
+    private func destination(for type: ChoiceType) -> some View {
+        switch type {
+        case .offerSupport:
+            TranslatorProfileView()
+        case .needInterpreter:
+            AllTranslatorsView()
+        }
     }
 }
 
 // MARK: - Choice Button Component
 struct ChoiceButton: View {
     let title: String
-    let action: () -> Void
     
     var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.title3)
-                .foregroundColor(.black)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
-                .frame(height: 200)
-                .background(
-                    RoundedRectangle(cornerRadius: 25)
-                        .fill(Color.white.opacity(0.9))
-                        .shadow(radius: 20)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 25)
-                        .stroke(Color.white, lineWidth: 3)
-                )
-        }
+        Text(title)
+            .font(.title3)
+            .foregroundColor(.black)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
+            .frame(height: 200)
+            .background(
+                RoundedRectangle(cornerRadius: 25)
+                    .fill(Color.white.opacity(0.9))
+                    .shadow(radius: 20)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 25)
+                    .stroke(Color.white, lineWidth: 3)
+            )
     }
 }
 
@@ -135,4 +126,3 @@ struct ChoiceView_Previews: PreviewProvider {
         ChoiceView()
     }
 }
-
