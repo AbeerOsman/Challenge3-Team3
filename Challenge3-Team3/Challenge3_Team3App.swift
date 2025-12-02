@@ -10,7 +10,7 @@ struct Challenge3_Team3App: App {
 
     var body: some Scene {
         WindowGroup {
-            splash()
+            splash() 
         }
     }
 }

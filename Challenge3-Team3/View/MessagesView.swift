@@ -1,21 +1,28 @@
 import SwiftUI
 
-// MARK: - MessagesView
-// شاشة الرسائل العامة للمستخدم.
-// - حالياً تعرض نصاً تمهيدياً (Placeholder) عند عدم وجود رسائل.
-// - مغلّفة داخل NavigationView مع عنوان شريط تنقل.
 struct MessagesView: View {
     var body: some View {
         NavigationView {
             VStack {
-                // محتوى الرسائل المبدئي (Placeholder)
-                Text("لا توجد رسائل حالياً")
-                    .foregroundColor(.secondary)
-                    .padding()
+                Spacer()
+
+                VStack(spacing: 12) {
+                    Image(systemName: "bubble.left.and.text.bubble.right")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 55, height: 55)
+                        .foregroundColor(.gray.opacity(0.7))
+
+                    Text("No messages available")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.center)
+                }
 
                 Spacer()
             }
-            .navigationTitle("الرسائل")
+            .frame(maxWidth: .infinity)
+            .navigationTitle("Messages")
             .navigationBarTitleDisplayMode(.inline)
         }
     }

@@ -24,8 +24,8 @@ struct AllTranslatorsView: View {
             }
         }
         .background(Color(hex: "F2F2F2"))
-        .environment(\.layoutDirection, .rightToLeft)
-        .navigationTitle("المترجمين المتاحيين")
+        .environment(\.layoutDirection, .leftToRight) // Changed from rightToLeft
+        .navigationTitle("Available Translators")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             if viewModel.translators.isEmpty {
@@ -42,7 +42,7 @@ struct TranslatorCardsView: View {
     var body: some View {
         VStack(spacing: 16) {
             if viewModel.isLoading {
-                ProgressView("جاري التحميل...")
+                ProgressView("Loading...") // Changed to English
                     .frame(maxWidth: .infinity)
                     .padding(.top, 100)
             } else if let error = viewModel.errorMessage {
@@ -51,7 +51,7 @@ struct TranslatorCardsView: View {
                         .font(.system(size: 50))
                         .foregroundColor(.orange)
                     
-                    Text("حدث خطأ في تحميل البيانات")
+                    Text("Error loading data") // Changed to English
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(.black)
                     
@@ -70,7 +70,7 @@ struct TranslatorCardsView: View {
                     } label: {
                         HStack {
                             Image(systemName: "arrow.clockwise")
-                            Text("إعادة المحاولة")
+                            Text("Try Again") // Changed to English
                         }
                         .foregroundColor(.white)
                         .font(.system(size: 16, weight: .semibold))
@@ -93,19 +93,19 @@ struct TranslatorCardsView: View {
                         .font(.system(size: 60))
                         .foregroundColor(Color(hex: "D8D8D8"))
                     
-                    Text("لا يوجد مترجمين متاحين")
+                    Text("No translators available") // Changed to English
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(.gray)
                     
                     if viewModel.selectedLevel != nil {
-                        Text("لا توجد نتائج لهذا المستوى")
+                        Text("No results for this level") // Changed to English
                             .font(.system(size: 14))
                             .foregroundColor(.gray)
                         
                         Button {
                             viewModel.clearFilter()
                         } label: {
-                            Text("عرض جميع المترجمين")
+                            Text("Show all translators") // Changed to English
                                 .foregroundColor(Color(hex: "0D189F"))
                                 .font(.system(size: 16, weight: .semibold))
                                 .padding(.top, 8)
@@ -122,6 +122,53 @@ struct TranslatorCardsView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 20)
+            }
+        }
+    }
+}
+
+struct LevelFilterView: View {
+    @ObservedObject var viewModel: TranslationViewModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Select Level") // Changed from "حدد المستوى"
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.black)
+
+            HStack(spacing: 8) {
+                FilterButton(
+                    title: "Beginner", // Changed from TranslatorLevel.beginner.rawValue
+                    isSelected: viewModel.selectedLevel == .beginner
+                ) {
+                    if viewModel.selectedLevel == .beginner {
+                        viewModel.clearFilter()
+                    } else {
+                        viewModel.filterByLevel(.beginner)
+                    }
+                }
+
+                FilterButton(
+                    title: "Intermediate", // Changed from TranslatorLevel.intermediate.rawValue
+                    isSelected: viewModel.selectedLevel == .intermediate
+                ) {
+                    if viewModel.selectedLevel == .intermediate {
+                        viewModel.clearFilter()
+                    } else {
+                        viewModel.filterByLevel(.intermediate)
+                    }
+                }
+
+                FilterButton(
+                    title: "Advanced", // Changed from TranslatorLevel.advanced.rawValue
+                    isSelected: viewModel.selectedLevel == .advanced
+                ) {
+                    if viewModel.selectedLevel == .advanced {
+                        viewModel.clearFilter()
+                    } else {
+                        viewModel.filterByLevel(.advanced)
+                    }
+                }
             }
         }
     }
