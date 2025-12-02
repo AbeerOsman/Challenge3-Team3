@@ -16,22 +16,23 @@ struct ChoiceView: View {
             ZStack {
                 Color("darkblue")
                     .ignoresSafeArea()
-                
+
                 VStack(spacing: 20) {
                     Spacer(minLength: 60)
-                    
+
                     ChoiceHeaderView()
-                    
+
                     Spacer()
-                    
+
                     ButtonsView(
                         options: choiceViewModel.options,
+                        authViewModel: authViewModel,
                         onSelection: { option in
                             choiceViewModel.handleTap(on: option)
                             authViewModel.saveRole(for: option.type)
                         }
                     )
-                    
+
                     Spacer()
                 }
                 .padding()
@@ -50,7 +51,7 @@ struct ChoiceHeaderView: View {
                 .frame(maxWidth: 380, maxHeight: 380)
                 .offset(y: 80)
                 .allowsHitTesting(false)
-            
+
             Text("This is where signs are understood,\nvoices are heard,\nand the community connects.")
                 .font(.title)
                 .foregroundColor(.white)
@@ -66,8 +67,9 @@ struct ChoiceHeaderView: View {
 // MARK: - Buttons container
 struct ButtonsView: View {
     let options: [ChoiceOption]
+    let authViewModel: AuthViewModel
     let onSelection: (ChoiceOption) -> Void
-    
+
     var body: some View {
         HStack(spacing: 20) {
             ForEach(options) { option in
@@ -85,14 +87,14 @@ struct ButtonsView: View {
         }
         .padding(.horizontal)
     }
-    
+
     @ViewBuilder
     private func destination(for type: ChoiceType) -> some View {
         switch type {
         case .offerSupport:
             TranslatorProfileView()
         case .needInterpreter:
-            AllTranslatorsView()
+            DeafName(authViewModel: authViewModel)
         }
     }
 }
@@ -100,7 +102,7 @@ struct ButtonsView: View {
 // MARK: - Choice Button Component
 struct ChoiceButton: View {
     let title: String
-    
+
     var body: some View {
         Text(title)
             .font(.title3)
