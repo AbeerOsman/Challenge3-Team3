@@ -10,11 +10,10 @@ import SwiftUI
 struct ChoiceView: View {
     @StateObject private var authViewModel = AuthViewModel()
     @StateObject private var choiceViewModel = ChoiceViewModel()
-    @State private var showDeafNameSheet = false // NEW
-    @State private var navigateToDeafHome = false // NEW
-    @State private var deafName: String = ""
 
-    
+    @State private var showDeafNameSheet = false
+    @State private var navigateToDeafHome = false
+    @State private var deafName: String = ""
 
     var body: some View {
         NavigationStack {
@@ -30,7 +29,7 @@ struct ChoiceView: View {
                     ButtonsView(
                         options: choiceViewModel.options,
                         authViewModel: authViewModel,
-                        showDeafNameSheet: $showDeafNameSheet, // NEW
+                        showDeafNameSheet: $showDeafNameSheet,
                         onSelection: { option in
                             choiceViewModel.handleTap(on: option)
                             authViewModel.saveRole(for: option.type)
@@ -39,24 +38,21 @@ struct ChoiceView: View {
                     .padding(.bottom, 300)
                 }
                 .padding()
-                
-                // NavigationLink for DeafHome
-                NavigationLink(destination: DeafHome(deafName: $deafName), isActive: $navigateToDeafHome) {
-                    EmptyView()
-                }
-                
             }
             .navigationBarBackButtonHidden(true)
-            .sheet(isPresented: $showDeafNameSheet) { // NEW: Sheet for DeafName
+            .sheet(isPresented: $showDeafNameSheet) {
                 DeafNameSheet(
                     authViewModel: authViewModel,
                     navigateToDeafHome: $navigateToDeafHome,
                     isPresented: $showDeafNameSheet,
                     deafName: $deafName
                 )
-                
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.hidden)
+            }
+            // Modern iOS 16+ navigation for Bool-driven destination
+            .navigationDestination(isPresented: $navigateToDeafHome) {
+                DeafHome(deafName: $deafName)
             }
         }
     }
@@ -66,22 +62,12 @@ struct ChoiceView: View {
 struct ChoiceHeaderView: View {
     var body: some View {
         ZStack {
-           
             Text("This is where signs are understood,\nvoices are heard,\nand the community connects.")
                 .font(.system(size: 30))
                 .bold()
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 320)
-                //.offset(y: -40)
-            
-//            Image("hands")
-//                .resizable()
-//                .scaledToFit()
-//                .frame(maxWidth: 380, maxHeight: 380)
-//                .offset(y: 120)
-//                .allowsHitTesting(false)
-            
         }
         .frame(maxWidth: .infinity, minHeight: 420)
         .padding(.horizontal)
@@ -92,23 +78,22 @@ struct ChoiceHeaderView: View {
 struct ButtonsView: View {
     let options: [ChoiceOption]
     let authViewModel: AuthViewModel
-    @Binding var showDeafNameSheet: Bool // NEW
+    @Binding var showDeafNameSheet: Bool
     let onSelection: (ChoiceOption) -> Void
 
     var body: some View {
         HStack(spacing: 20) {
             ForEach(options) { option in
-                // Check if this is "Need Interpreter" option
+
                 if option.type == .needInterpreter {
-                    // NEW: Show sheet instead of navigation
                     Button {
                         onSelection(option)
                         showDeafNameSheet = true
                     } label: {
                         ChoiceButton(title: option.title)
                     }
+
                 } else {
-                    // Keep NavigationLink for "Offer Support"
                     NavigationLink {
                         destination(for: option.type)
                     } label: {
@@ -129,14 +114,14 @@ struct ButtonsView: View {
     private func destination(for type: ChoiceType) -> some View {
         switch type {
         case .offerSupport:
-            TranslatorProfileView()
+            InterpreterTabView()   // NEW: tab bar for interpreters
         case .needInterpreter:
-            EmptyView() // Not used anymore
+            EmptyView()
         }
     }
 }
 
-// MARK: - Choice Button Component
+// MARK: - Choice Button
 struct ChoiceButton: View {
     let title: String
 
