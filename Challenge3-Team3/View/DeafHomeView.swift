@@ -11,7 +11,9 @@ struct DeafHome: View {
     @StateObject private var viewModel = TranslationViewModel()
     @Environment(\.layoutDirection) var layoutDirection
     @Binding var deafName: String
-    @State private var deafUserId: String = UUID().uuidString // ✨ Generate unique ID
+    
+    // ✨ Use @AppStorage to persist user ID
+    @AppStorage("deafUserId") private var deafUserId: String = ""
 
     var body: some View {
         VStack(spacing: 0) {
@@ -26,10 +28,8 @@ struct DeafHome: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
 
-                    // Show only 3 translators + "See All" card
                     TranslatorCardsScrollView(viewModel: viewModel)
 
-                    // Requests section - only show if there are appointments
                     Text("Appointment Requests")
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.black)
@@ -49,8 +49,26 @@ struct DeafHome: View {
                 }
             }
         }
-        .onAppear { // ✨ NEW: Set user info when view appears
-            viewModel.setDeafUser(userId: deafUserId, name: deafName)
+        .onAppear {
+            print("🏠 DeafHome appeared")
+            print("   deafName from binding: '\(deafName)'")
+            print("   deafUserId from AppStorage: '\(deafUserId)'")
+            
+            // If no user ID exists, create one
+            if deafUserId.isEmpty {
+                deafUserId = UUID().uuidString
+                print("Generated new user ID: \(deafUserId)")
+            }
+            
+            // ALWAYS set user info when view appears
+            if !deafName.isEmpty {
+                print("Setting user in ViewModel:")
+                print("ID: \(deafUserId)")
+                print("Name: \(deafName)")
+                viewModel.setDeafUser(userId: deafUserId, name: deafName)
+            } else {
+                print("deafName is empty!")
+            }
         }
         .navigationBarBackButtonHidden(true)
         .background(Color(hex: "F2F2F2"))
@@ -79,7 +97,6 @@ struct HeaderView: View {
             
             Spacer()
             
-            // Messages button
             NavigationLink {
                 MessagesView()
             } label: {
@@ -93,12 +110,10 @@ struct HeaderView: View {
                 .padding(.trailing, 20)
             }
 
-            // Hidden NavigationLink to SplashView
             NavigationLink(destination: ChoiceView(), isActive: $goToSplash) {
                 EmptyView()
             }
 
-            // Logout button with alert
             Button {
                 showLogoutAlert = true
             } label: {
@@ -148,14 +163,14 @@ struct FilterButton: View {
     }
 }
 
-// MARK: - My Requests View (✨ UPDATED)
+// MARK: - My Requests View
 struct MyRequestsView: View {
     @ObservedObject var viewModel: TranslationViewModel
     
     var body: some View {
         VStack(spacing: 12) {
             ForEach(viewModel.appointments) { appointment in
-                AppointmentCard(appointment: appointment, viewModel: viewModel)
+                AppointmentCard(appointment: appointment, viewModel: viewModel) // ✅ Correct
             }
         }
     }
@@ -191,20 +206,17 @@ struct TranslatorCardsScrollView: View {
                     .frame(height: 180)
             } else {
                 TabView(selection: $currentPage) {
-                    // Show only first 3 translators
                     ForEach(Array(viewModel.limitedTranslators.enumerated()), id: \.offset) { index, translator in
                         TranslatorCard(translator: translator, viewModel: viewModel)
                             .tag(index)
                     }
                     
-                    // "See All" card as 4th card
-                    SeeAllCard()
+                    SeeAllCard(viewModel: viewModel)
                         .tag(viewModel.limitedTranslators.count)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .frame(height: 180)
                 
-                // Custom page indicator
                 HStack(spacing: 8) {
                     ForEach(0...viewModel.limitedTranslators.count, id: \.self) { index in
                         Circle()
@@ -218,23 +230,21 @@ struct TranslatorCardsScrollView: View {
     }
 }
 
-// MARK: - ✨ NEW: Appointment Card (replaces requistsappoitments)
+// MARK: - Appointment Card
 struct AppointmentCard: View {
-    let appointment: AppointmentRequest
+    let appointment: AppointmentRequest // ✅ Using AppointmentRequest
     @ObservedObject var viewModel: TranslationViewModel
     
     var body: some View {
         HStack(spacing: 0) {
-            // Info section
             VStack(alignment: .leading, spacing: 12) {
-                // Name + image
                 HStack(spacing: 12) {
                     Image(systemName: "person.crop.circle.fill")
                         .foregroundColor(Color(hex: "787880"))
                         .font(.system(size: 48, weight: .medium))
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(appointment.translatorName)
+                        Text(appointment.translatorName) // ✅ From appointment
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(Color(hex: "1A1A1A"))
                         
@@ -245,14 +255,11 @@ struct AppointmentCard: View {
                             
                             Text(appointment.translatorCategory == "متطوع" ? "Volunteer" : "Paid")
                                 .font(.system(size: 13, weight: .medium))
-                                .foregroundColor(
-                                    appointment.translatorCategory == "متطوع" ? Color(hex: "5CB853") : Color(hex: "EBA0A0")
-                                )
+                                .foregroundColor(appointment.translatorCategory == "متطوع" ? Color(hex: "5CB853") : Color(hex: "EBA0A0"))
                         }
                     }
                 }
                 
-                // Tags with modern design
                 HStack(spacing: 8) {
                     TagView(text: appointment.translatorGender, icon: "person.fill")
                     TagView(text: appointment.translatorAge, icon: "calendar")
@@ -262,7 +269,6 @@ struct AppointmentCard: View {
             .padding(.leading, 16)
             .padding(.trailing, 8)
             
-            // Elegant divider
             Rectangle()
                 .fill(
                     LinearGradient(
@@ -277,7 +283,6 @@ struct AppointmentCard: View {
                 )
                 .frame(width: 1, height: 100)
             
-            // Price section with cancel button
             VStack(spacing: 8) {
                 VStack(spacing: 2) {
                     HStack(spacing: 4) {
@@ -296,10 +301,13 @@ struct AppointmentCard: View {
                         .foregroundColor(Color(hex: "9E9E9E"))
                 }
                 
-                // Cancel button
+                // ✨ FIXED Cancel button
                 Button {
                     if let appointmentId = appointment.id {
+                        print("🗑️ Cancel button pressed for appointment: \(appointmentId)")
                         viewModel.cancelAppointment(appointmentId: appointmentId)
+                    } else {
+                        print("❌ Appointment ID is nil!")
                     }
                 } label: {
                     HStack {
@@ -337,9 +345,7 @@ struct TranslatorCard: View {
     
     var body: some View {
         HStack(spacing: 0) {
-            // Info section
             VStack(alignment: .leading, spacing: 12) {
-                // Name + image
                 HStack(spacing: 12) {
                     Image(systemName: "person.crop.circle.fill")
                         .foregroundColor(Color(hex: "787880"))
@@ -357,14 +363,11 @@ struct TranslatorCard: View {
                             
                             Text(translator.state == "متطوع" ? "Volunteer" : "Paid")
                                 .font(.system(size: 13, weight: .medium))
-                                .foregroundColor(
-                                    translator.state == "متطوع" ? Color(hex: "5CB853") : Color(hex: "EBA0A0")
-                                )
+                                .foregroundColor(translator.state == "متطوع" ? Color(hex: "5CB853") : Color(hex: "EBA0A0"))
                         }
                     }
                 }
                 
-                // Tags with modern design
                 HStack(spacing: 8) {
                     TagView(text: translator.gender, icon: "person.fill")
                     TagView(text: translator.age, icon: "calendar")
@@ -374,7 +377,6 @@ struct TranslatorCard: View {
             .padding(.leading, 8)
             .padding(.trailing, 8)
             
-            // Elegant divider
             Rectangle()
                 .fill(
                     LinearGradient(
@@ -389,7 +391,6 @@ struct TranslatorCard: View {
                 )
                 .frame(width: 1, height: 100)
             
-            // Price section with modern styling
             VStack(spacing: 8) {
                 VStack(spacing: 2) {
                     HStack(spacing: 4) {
@@ -480,10 +481,13 @@ struct TagView: View {
 }
 
 // MARK: - See All Card
+// MARK: - See All Card
 struct SeeAllCard: View {
+    @ObservedObject var viewModel: TranslationViewModel // ✨ Add this
+    
     var body: some View {
         NavigationLink {
-            AllTranslatorsView()
+            AllTranslatorsView(viewModel: viewModel) // ✨ Pass the viewModel
         } label: {
             VStack(spacing: 20) {
                 Image(systemName: "arrow.right")
@@ -509,7 +513,6 @@ struct SeeAllCard: View {
         }
     }
 }
-
 // MARK: - Color Extension
 extension Color {
     init(hex: String) {
@@ -518,11 +521,11 @@ extension Color {
         Scanner(string: hex).scanHexInt64(&int)
         let a, r, g, b: UInt64
         switch hex.count {
-        case 3: // RGB (12-bit)
+        case 3:
             (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-        case 6: // RGB (24-bit)
+        case 6:
             (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-        case 8: // ARGB (32-bit)
+        case 8:
             (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
         default:
             (a, r, g, b) = (1, 1, 1, 0)
@@ -533,13 +536,12 @@ extension Color {
             red: Double(r) / 255,
             green: Double(g) / 255,
             blue:  Double(b) / 255,
-            opacity: Double(a) / 255
-        )
+            opacity: Double(a) / 255)
     }
 }
 
 #Preview {
-    @State var previewName = "Preview User"
+    @State var previewName = ""
     return NavigationView {
         DeafHome(deafName: $previewName)
     }

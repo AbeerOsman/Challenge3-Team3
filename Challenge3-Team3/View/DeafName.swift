@@ -12,40 +12,43 @@ struct DeafNameSheet: View {
     @ObservedObject var authViewModel: AuthViewModel
     @Binding var navigateToDeafHome: Bool
     @Binding var isPresented: Bool
-    @Binding var deafName: String 
+    @Binding var deafName: String
     
     var body: some View {
         ZStack {
-            
             Color(hex: "DDE8FD")
                 .ignoresSafeArea()
             
             VStack(spacing: 20) {
                 Spacer()
-                Text("Sign in")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.black)
                 
-                // Name Input
+                HStack {
+                    Text("Your Name:")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(.black)
+                }
+                
                 TextField("Name", text: $deafName)
                     .padding()
                     .frame(width: 350, height: 55)
                     .background(Color.white)
                     .cornerRadius(13)
 
-                // Sign in button
                 Button {
                     if !deafName.isEmpty {
-                        authViewModel.createDeafUserProfile(name: deafName)
-                        isPresented = false // Close sheet
+                        print("🔵 Sign in button pressed")
+                        print("   Name entered: '\(deafName)'")
                         
-                        // Small delay to ensure smooth transition
+                        authViewModel.createDeafUserProfile(name: deafName)
+                        isPresented = false
+                        
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            navigateToDeafHome = true // Navigate to DeafHome
+                            print("   ✅ Navigating to DeafHome with name: '\(deafName)'")
+                            navigateToDeafHome = true
                         }
                     }
                 } label: {
-                    Text("Sign in")
+                    Text("Save")
                         .foregroundColor(.white)
                         .frame(width: 350, height: 55)
                         .background(deafName.isEmpty ? Color.gray : Color(hex: "0D189F"))

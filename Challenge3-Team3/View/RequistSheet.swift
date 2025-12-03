@@ -64,6 +64,22 @@ struct RequistSheet: View {
             }
             .padding(.vertical, 20)
             
+            VStack(spacing: 12) {
+
+                Text("Are you sure you want to send the request to the translator?")
+                    .font(.system(size: 20, weight: .bold))
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.black)
+
+                Text("Once your request is sent, the translator will respond to you.")
+                    .font(.subheadline)
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.black)
+
+            }
+            .padding(.horizontal, 36)   // clean consistent padding
+            .padding(.top, 6)
+            
             Spacer()
             
             if showSuccessMessage {
@@ -124,6 +140,12 @@ struct RequistSheet: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 32)
         }
+        .padding(.bottom, 16)
+        .frame(maxWidth: .infinity)
+        .background(
+            Color(hex: "DDE8FD")
+                .ignoresSafeArea(edges: .bottom)
+        )
         .environment(\.layoutDirection, .leftToRight)
     }
     

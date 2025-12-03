@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct AllTranslatorsView: View {
-    @StateObject private var viewModel = TranslationViewModel()
+    @ObservedObject var viewModel: TranslationViewModel // ✨ Changed from @StateObject to @ObservedObject
     
     var body: some View {
         ZStack {
@@ -24,10 +24,14 @@ struct AllTranslatorsView: View {
             }
         }
         .background(Color(hex: "F2F2F2"))
-        .environment(\.layoutDirection, .leftToRight) // Changed from rightToLeft
+        .environment(\.layoutDirection, .leftToRight)
         .navigationTitle("Available Translators")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
+            print("📋 AllTranslatorsView appeared")
+            print("   ViewModel User ID: \(viewModel.deafUserId)")
+            print("   ViewModel User Name: \(viewModel.deafName)")
+            
             if viewModel.translators.isEmpty {
                 viewModel.fetchTranslators()
             }
@@ -42,7 +46,7 @@ struct TranslatorCardsView: View {
     var body: some View {
         VStack(spacing: 16) {
             if viewModel.isLoading {
-                ProgressView("Loading...") // Changed to English
+                ProgressView("Loading...")
                     .frame(maxWidth: .infinity)
                     .padding(.top, 100)
             } else if let error = viewModel.errorMessage {
@@ -51,7 +55,7 @@ struct TranslatorCardsView: View {
                         .font(.system(size: 50))
                         .foregroundColor(.orange)
                     
-                    Text("Error loading data") // Changed to English
+                    Text("Error loading data")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(.black)
                     
@@ -70,7 +74,7 @@ struct TranslatorCardsView: View {
                     } label: {
                         HStack {
                             Image(systemName: "arrow.clockwise")
-                            Text("Try Again") // Changed to English
+                            Text("Try Again")
                         }
                         .foregroundColor(.white)
                         .font(.system(size: 16, weight: .semibold))
@@ -93,19 +97,19 @@ struct TranslatorCardsView: View {
                         .font(.system(size: 60))
                         .foregroundColor(Color(hex: "D8D8D8"))
                     
-                    Text("No translators available") // Changed to English
+                    Text("No translators available")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(.gray)
                     
                     if viewModel.selectedLevel != nil {
-                        Text("No results for this level") // Changed to English
+                        Text("No results for this level")
                             .font(.system(size: 14))
                             .foregroundColor(.gray)
                         
                         Button {
                             viewModel.clearFilter()
                         } label: {
-                            Text("Show all translators") // Changed to English
+                            Text("Show all translators")
                                 .foregroundColor(Color(hex: "0D189F"))
                                 .font(.system(size: 16, weight: .semibold))
                                 .padding(.top, 8)
@@ -132,13 +136,13 @@ struct LevelFilterView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Select Level") // Changed from "حدد المستوى"
+            Text("Select Level")
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.black)
 
             HStack(spacing: 8) {
                 FilterButton(
-                    title: "Beginner", // Changed from TranslatorLevel.beginner.rawValue
+                    title: "Beginner",
                     isSelected: viewModel.selectedLevel == .beginner
                 ) {
                     if viewModel.selectedLevel == .beginner {
@@ -149,7 +153,7 @@ struct LevelFilterView: View {
                 }
 
                 FilterButton(
-                    title: "Intermediate", // Changed from TranslatorLevel.intermediate.rawValue
+                    title: "Intermediate",
                     isSelected: viewModel.selectedLevel == .intermediate
                 ) {
                     if viewModel.selectedLevel == .intermediate {
@@ -160,7 +164,7 @@ struct LevelFilterView: View {
                 }
 
                 FilterButton(
-                    title: "Advanced", // Changed from TranslatorLevel.advanced.rawValue
+                    title: "Advanced",
                     isSelected: viewModel.selectedLevel == .advanced
                 ) {
                     if viewModel.selectedLevel == .advanced {
@@ -176,6 +180,6 @@ struct LevelFilterView: View {
 
 #Preview {
     NavigationView {
-        AllTranslatorsView()
+        AllTranslatorsView(viewModel: TranslationViewModel())
     }
 }

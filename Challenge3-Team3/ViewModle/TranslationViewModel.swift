@@ -159,17 +159,17 @@ class TranslationViewModel: ObservableObject {
             DispatchQueue.main.async {
                 switch result {
                 case .success:
-                    print("✅ Appointment canceled")
+                    print("✅ Appointment canceled successfully")
                     self?.errorMessage = nil
+                    // The listener will automatically update the appointments array
                     
                 case .failure(let error):
                     print("❌ Error canceling: \(error.localizedDescription)")
-                    self?.errorMessage = "Failed to cancel appointment"
+                    self?.errorMessage = "Failed to cancel appointment: \(error.localizedDescription)"
                 }
             }
         }
     }
-    
     // Get limited translators for home view (only 3)
     var limitedTranslators: [TranslatorData] {
         Array(translators.prefix(3))
