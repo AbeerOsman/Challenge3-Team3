@@ -25,12 +25,7 @@ struct InterpreterTabView: View {
                     Text("Messages")
                 }
 
-            // 3️⃣ Requests Tab
-//            RequestsView()
-//                .tabItem {
-//                    Image(systemName: "bell.badge")
-//                    Text("Requests")
-//                }
+          
         }
     }
 }
