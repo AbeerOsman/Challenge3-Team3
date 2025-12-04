@@ -12,189 +12,192 @@ struct TranslatorProfileView: View {
     private let buttonColor = Color(red: 13/255, green: 24/255, blue: 159/255)
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                backgroundColor.ignoresSafeArea()
+        ZStack {
+            backgroundColor.ignoresSafeArea()
 
-                ScrollView {
-                    VStack(spacing: 16) {
-                        inputCard {
-                            VStack(alignment: .trailing, spacing: 12) {
+            ScrollView {
+                TranslatorHeaderView()
+                VStack(spacing: 16) {
 
-                                // الاسم
-                                VStack(alignment: .trailing, spacing: 6) {
-                                    Text("الاسم")
+                    inputCard {
+                        VStack(alignment: .leading, spacing: 12) {
+
+                            // Name
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Name")
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                                TextField("Enter name", text: $viewModel.name)
+                                    .textInputAutocapitalization(.words)
+                                    .autocorrectionDisabled(true)
+                                    .multilineTextAlignment(.leading)
+                                    .padding(12)
+                                    .background(Color.white)
+                                    .cornerRadius(10)
+                            }
+
+                            // Gender
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Gender")
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                                Picker("Gender", selection: $viewModel.selectedGender) {
+                                    ForEach(Gender.allCases) { gender in
+                                        Text(gender.rawValue).tag(gender)
+                                    }
+                                }
+                                .pickerStyle(.segmented)
+                            }
+
+                            // Age
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Age")
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                                TextField("Enter age", text: $viewModel.ageText)
+                                    .keyboardType(.numberPad)
+                                    .multilineTextAlignment(.leading)
+                                    .padding(12)
+                                    .background(Color.white)
+                                    .cornerRadius(10)
+
+                                Text("Minimum age is 18 years")
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+
+                            // Level
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Level")
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                                Picker("Level", selection: $viewModel.selectedLevel) {
+                                    ForEach(Level.allCases) { level in
+                                        Text(level.rawValue).tag(level)
+                                    }
+                                }
+                                .pickerStyle(.segmented)
+                            }
+
+                            // Plan
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Plan")
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                                Picker("Plan", selection: $viewModel.selectedPlan) {
+                                    ForEach(Plan.allCases) { plan in
+                                        Text(plan.rawValue).tag(plan)
+                                    }
+                                }
+                                .pickerStyle(.segmented)
+                                .onChange(of: viewModel.selectedPlan) { newValue in
+                                    if newValue == .free {
+                                        viewModel.hourlyRateText = ""
+                                    }
+                                }
+                            }
+
+                            // Hourly rate
+                            if viewModel.selectedPlan == .paid {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("Hourly Rate")
                                         .font(.headline)
-                                        .frame(maxWidth: .infinity, alignment: .trailing)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
 
-                                    TextField("أدخل الاسم", text: $viewModel.name)
-                                        .textInputAutocapitalization(.words)
-                                        .autocorrectionDisabled(true)
-                                        .multilineTextAlignment(.trailing)
+                                    TextField("Enter rate (numbers only)", text: $viewModel.hourlyRateText)
+                                        .keyboardType(.decimalPad)
+                                        .multilineTextAlignment(.leading)
                                         .padding(12)
                                         .background(Color.white)
                                         .cornerRadius(10)
                                 }
+                            }
 
-                                // الجنس
-                                VStack(alignment: .trailing, spacing: 6) {
-                                    Text("الجنس")
-                                        .font(.headline)
-                                        .frame(maxWidth: .infinity, alignment: .trailing)
-
-                                    Picker("الجنس", selection: $viewModel.selectedGender) {
-                                        ForEach(Gender.allCases) { gender in
-                                            Text(gender.rawValue).tag(gender)
-                                        }
-                                    }
-                                    .pickerStyle(.segmented)
-                                }
-
-                                // العمر
-                                VStack(alignment: .trailing, spacing: 6) {
-                                    Text("العمر")
-                                        .font(.headline)
-                                        .frame(maxWidth: .infinity, alignment: .trailing)
-
-                                    TextField("أدخل العمر", text: $viewModel.ageText)
-                                        .keyboardType(.numberPad)
-                                        .multilineTextAlignment(.trailing)
-                                        .padding(12)
-                                        .background(Color.white)
-                                        .cornerRadius(10)
-
-                                    Text("الحد الأدنى للعمر هو 18 سنة")
-                                        .font(.footnote)
-                                        .foregroundColor(.secondary)
-                                        .frame(maxWidth: .infinity, alignment: .trailing)
-                                }
-
-                                // المستوى
-                                VStack(alignment: .trailing, spacing: 6) {
-                                    Text("المستوى")
-                                        .font(.headline)
-                                        .frame(maxWidth: .infinity, alignment: .trailing)
-
-                                    Picker("المستوى", selection: $viewModel.selectedLevel) {
-                                        ForEach(Level.allCases) { level in
-                                            Text(level.rawValue).tag(level)
-                                        }
-                                    }
-                                    .pickerStyle(.segmented)
-                                }
-
-                                // الفئة
-                                VStack(alignment: .trailing, spacing: 6) {
-                                    Text("الفئة")
-                                        .font(.headline)
-                                        .frame(maxWidth: .infinity, alignment: .trailing)
-
-                                    Picker("الفئة", selection: $viewModel.selectedPlan) {
-                                        ForEach(Plan.allCases) { plan in
-                                            Text(plan.rawValue).tag(plan)
-                                        }
-                                    }
-                                    .pickerStyle(.segmented)
-                                    .onChange(of: viewModel.selectedPlan) { _, newValue in
-                                        if newValue == .free {
-                                            viewModel.hourlyRateText = ""
-                                        }
-                                    }
-                                }
-
-                                // السعر
-                                if viewModel.selectedPlan == .paid {
-                                    VStack(alignment: .trailing, spacing: 6) {
-                                        Text("السعر بالساعة")
-                                            .font(.headline)
-                                            .frame(maxWidth: .infinity, alignment: .trailing)
-
-                                        TextField("أدخل السعر (أرقام فقط)", text: $viewModel.hourlyRateText)
-                                            .keyboardType(.decimalPad)
-                                            .multilineTextAlignment(.trailing)
-                                            .padding(12)
-                                            .background(Color.white)
-                                            .cornerRadius(10)
-                                    }
-                                }
-
-                                if let error = viewModel.errorMessage {
-                                    Text(error)
-                                        .foregroundColor(.red)
-                                        .font(.subheadline)
-                                        .multilineTextAlignment(.center)
-                                }
+                            if let error = viewModel.errorMessage {
+                                Text(error)
+                                    .foregroundColor(.red)
+                                    .font(.subheadline)
+                                    .multilineTextAlignment(.center)
                             }
                         }
-                        .padding(.horizontal)
+                    }
+                    .padding(.horizontal)
 
-                        // أزرار الحفظ والحذف
-                        VStack(spacing: 8) {
-                            Button {
-                                Task {
-                                    await viewModel.saveUserProfile()
-                                    showCustomAlertWithMessage()
-                                }
-                            } label: {
-                                HStack {
-                                    if viewModel.isSaving {
-                                        ProgressView().tint(.white)
-                                    }
-                                    Text("حفظ البيانات")
-                                        .fontWeight(.semibold)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(buttonColor)
-                                .foregroundColor(.white)
-                                .cornerRadius(14)
+                    // Save & Delete Buttons
+                    VStack(spacing: 8) {
+                        Button {
+                            Task {
+                                await viewModel.saveUserProfile()
+                                showCustomAlertWithMessage()
                             }
-                            .disabled(viewModel.isSaving)
-
-
-                            Button(role: .destructive) {
-                                Task {
-                                    await viewModel.deleteUserProfile()
-                                    showCustomAlertWithMessage()
+                        } label: {
+                            HStack {
+                                if viewModel.isSaving {
+                                    ProgressView().tint(.white)
                                 }
-                            } label: {
-                                HStack {
-                                    Image(systemName: "trash")
-                                    Text("حذف البيانات")
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .border(.gray, width: 1)
-                                .foregroundColor(.red)
-                                .cornerRadius(14)
+                                Text("Save Profile")
+                                    .fontWeight(.semibold)
                             }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(buttonColor)
+                            .foregroundColor(.white)
+                            .cornerRadius(14)
                         }
-                        .padding(.horizontal)
-                        .padding(.bottom, 24)
-                    }
-                    .padding(.top, 16)
-                }
+                        .disabled(viewModel.isSaving)
 
-                if showCustomAlert {
-                    CenteredAlertView(message: alertMessage) {
-                        showCustomAlert = false
-                    }
-                }
 
+                        Button(role: .destructive) {
+                            Task {
+                                await viewModel.deleteUserProfile()
+                                showCustomAlertWithMessage()
+                            }
+                        } label: {
+                            HStack {
+                                Image(systemName: "trash")
+                                Text("Delete Profile")
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .stroke(Color.gray, lineWidth: 1)
+                            )
+                            .foregroundColor(.red)
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, 24)
+                }
+                .padding(.top, 16)
             }
-            .navigationTitle("الملف الشخصي")
-            .navigationBarTitleDisplayMode(.inline)
-            .onAppear {
-                Task { await viewModel.loadUserProfile() }
+
+            if showCustomAlert {
+                CenteredAlertView(message: alertMessage) {
+                    showCustomAlert = false
+                }
             }
+        }
+        // IMPORTANT: apply navigation modifiers here (this view should be used inside an outer NavigationView)
+        .navigationTitle("Profile")
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .onAppear {
+            Task { await viewModel.loadUserProfile() }
         }
     }
 
     // MARK: - Show message based on action
     private func showCustomAlertWithMessage() {
         alertMessage = viewModel.lastActionIsDelete
-        ? "تم حذف البيانات من واجهة الباحثين عن مترجم بنجاح"
-        : "تم حفظ البيانات بنجاح، وإرسالها للباحثين عن مترجم لغة إشارة"
+            ? "Data has been removed from the translator search interface successfully."
+            : "Profile saved successfully and sent to sign language translator searchers."
 
         showCustomAlert = true
     }
@@ -212,9 +215,13 @@ struct TranslatorProfileView: View {
 
 struct ProfileView_Previews: PreviewProvider {
     static var previews: some View {
-        TranslatorProfileView()
+        // Wrap preview in a NavigationView to simulate being pushed from parent
+        NavigationView {
+            TranslatorProfileView()
+        }
     }
 }
+
 struct CenteredAlertView: View {
     var message: String
     var onDismiss: () -> Void
@@ -231,7 +238,7 @@ struct CenteredAlertView: View {
                     .foregroundColor(.black)
                     .padding(.horizontal, 16)
 
-                Button("حسناً") {
+                Button("OK") {
                     onDismiss()
                 }
                 .font(.system(size: 16, weight: .bold))
@@ -249,5 +256,43 @@ struct CenteredAlertView: View {
         }
         .transition(.scale)
         .animation(.spring(), value: message)
+    }
+}
+
+struct TranslatorHeaderView: View {
+    @State private var showLogoutAlert = false
+    @State private var goToSplash = false
+
+    var body: some View {
+        HStack {
+            Spacer()
+
+            Button {
+                showLogoutAlert = true
+            } label: {
+                VStack(spacing: 4) {
+                    Image(systemName: "iphone.and.arrow.right.outward")
+                        .font(.system(size: 24))
+                        .foregroundColor(.red)
+
+                    Text("SignOut")
+                        .font(.system(size: 13))
+                        .foregroundColor(.red)
+                }
+                .padding(.trailing, 20)
+            }
+            .alert("Are you sure you want to sign out?", isPresented: $showLogoutAlert) {
+                Button("Cancel", role: .cancel) {}
+                Button("Sign Out", role: .destructive) {
+                    goToSplash = true
+                }
+            }
+
+            // Hidden NavigationLink
+            NavigationLink(destination: ChoiceView(), isActive: $goToSplash) {
+                EmptyView()
+            }
+        }
+        .padding(.vertical, 16)
     }
 }

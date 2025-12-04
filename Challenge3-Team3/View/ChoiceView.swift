@@ -11,30 +11,48 @@ struct ChoiceView: View {
     @StateObject private var authViewModel = AuthViewModel()
     @StateObject private var choiceViewModel = ChoiceViewModel()
 
+    @State private var showDeafNameSheet = false
+    @State private var navigateToDeafHome = false
+    @State private var deafName: String = ""
+
     var body: some View {
         NavigationStack {
             ZStack {
                 Color("darkblue")
                     .ignoresSafeArea()
-                
+
                 VStack(spacing: 20) {
-                    Spacer(minLength: 60)
-                    
+                    Spacer(minLength: 200)
+
                     ChoiceHeaderView()
-                    
-                    Spacer()
-                    
+
                     ButtonsView(
                         options: choiceViewModel.options,
+                        authViewModel: authViewModel,
+                        showDeafNameSheet: $showDeafNameSheet,
                         onSelection: { option in
                             choiceViewModel.handleTap(on: option)
                             authViewModel.saveRole(for: option.type)
                         }
                     )
-                    
-                    Spacer()
+                    .padding(.bottom, 300)
                 }
                 .padding()
+            }
+            .navigationBarBackButtonHidden(true)
+            .sheet(isPresented: $showDeafNameSheet) {
+                DeafNameSheet(
+                    authViewModel: authViewModel,
+                    navigateToDeafHome: $navigateToDeafHome,
+                    isPresented: $showDeafNameSheet,
+                    deafName: $deafName
+                )
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.hidden)
+            }
+            // Modern iOS 16+ navigation for Bool-driven destination
+            .navigationDestination(isPresented: $navigateToDeafHome) {
+                DeafHome(deafName: $deafName)
             }
         }
     }
@@ -44,19 +62,12 @@ struct ChoiceView: View {
 struct ChoiceHeaderView: View {
     var body: some View {
         ZStack {
-            Image("hands")
-                .resizable()
-                .scaledToFit()
-                .frame(maxWidth: 380, maxHeight: 380)
-                .offset(y: 80)
-                .allowsHitTesting(false)
-            
             Text("This is where signs are understood,\nvoices are heard,\nand the community connects.")
-                .font(.title)
+                .font(.system(size: 30))
+                .bold()
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 320)
-                .offset(y: -60)
         }
         .frame(maxWidth: .infinity, minHeight: 420)
         .padding(.horizontal)
@@ -66,44 +77,58 @@ struct ChoiceHeaderView: View {
 // MARK: - Buttons container
 struct ButtonsView: View {
     let options: [ChoiceOption]
+    let authViewModel: AuthViewModel
+    @Binding var showDeafNameSheet: Bool
     let onSelection: (ChoiceOption) -> Void
-    
+
     var body: some View {
         HStack(spacing: 20) {
             ForEach(options) { option in
-                NavigationLink {
-                    destination(for: option.type)
-                } label: {
-                    ChoiceButton(title: option.title)
-                }
-                .simultaneousGesture(
-                    TapGesture().onEnded {
+
+                if option.type == .needInterpreter {
+                    Button {
                         onSelection(option)
+                        showDeafNameSheet = true
+                    } label: {
+                        ChoiceButton(title: option.title)
                     }
-                )
+
+                } else {
+                    NavigationLink {
+                        destination(for: option.type)
+                    } label: {
+                        ChoiceButton(title: option.title)
+                    }
+                    .simultaneousGesture(
+                        TapGesture().onEnded {
+                            onSelection(option)
+                        }
+                    )
+                }
             }
         }
         .padding(.horizontal)
     }
-    
+
     @ViewBuilder
     private func destination(for type: ChoiceType) -> some View {
         switch type {
         case .offerSupport:
-            TranslatorProfileView()
+            InterpreterTabView()   // NEW: tab bar for interpreters
         case .needInterpreter:
-            AllTranslatorsView()
+            EmptyView()
         }
     }
 }
 
-// MARK: - Choice Button Component
+// MARK: - Choice Button
 struct ChoiceButton: View {
     let title: String
-    
+
     var body: some View {
         Text(title)
-            .font(.title3)
+            .font(.system(size: 20))
+            .bold()
             .foregroundColor(.black)
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
@@ -115,7 +140,7 @@ struct ChoiceButton: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 25)
-                    .stroke(Color.white, lineWidth: 3)
+                    .stroke(Color.white, lineWidth: 6)
             )
     }
 }

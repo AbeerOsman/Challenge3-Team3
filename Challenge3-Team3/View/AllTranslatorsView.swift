@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct AllTranslatorsView: View {
-    @StateObject private var viewModel = TranslationViewModel()
+    @ObservedObject var viewModel: TranslationViewModel // ✨ Changed from @StateObject to @ObservedObject
     
     var body: some View {
         ZStack {
@@ -24,10 +24,14 @@ struct AllTranslatorsView: View {
             }
         }
         .background(Color(hex: "F2F2F2"))
-        .environment(\.layoutDirection, .rightToLeft)
-        .navigationTitle("المترجمين المتاحيين")
+        .environment(\.layoutDirection, .leftToRight)
+        .navigationTitle("Available Translators")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
+            print("📋 AllTranslatorsView appeared")
+            print("   ViewModel User ID: \(viewModel.deafUserId)")
+            print("   ViewModel User Name: \(viewModel.deafName)")
+            
             if viewModel.translators.isEmpty {
                 viewModel.fetchTranslators()
             }
@@ -42,7 +46,7 @@ struct TranslatorCardsView: View {
     var body: some View {
         VStack(spacing: 16) {
             if viewModel.isLoading {
-                ProgressView("جاري التحميل...")
+                ProgressView("Loading...")
                     .frame(maxWidth: .infinity)
                     .padding(.top, 100)
             } else if let error = viewModel.errorMessage {
@@ -51,7 +55,7 @@ struct TranslatorCardsView: View {
                         .font(.system(size: 50))
                         .foregroundColor(.orange)
                     
-                    Text("حدث خطأ في تحميل البيانات")
+                    Text("Error loading data")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(.black)
                     
@@ -70,7 +74,7 @@ struct TranslatorCardsView: View {
                     } label: {
                         HStack {
                             Image(systemName: "arrow.clockwise")
-                            Text("إعادة المحاولة")
+                            Text("Try Again")
                         }
                         .foregroundColor(.white)
                         .font(.system(size: 16, weight: .semibold))
@@ -93,19 +97,19 @@ struct TranslatorCardsView: View {
                         .font(.system(size: 60))
                         .foregroundColor(Color(hex: "D8D8D8"))
                     
-                    Text("لا يوجد مترجمين متاحين")
+                    Text("No translators available")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(.gray)
                     
                     if viewModel.selectedLevel != nil {
-                        Text("لا توجد نتائج لهذا المستوى")
+                        Text("No results for this level")
                             .font(.system(size: 14))
                             .foregroundColor(.gray)
                         
                         Button {
                             viewModel.clearFilter()
                         } label: {
-                            Text("عرض جميع المترجمين")
+                            Text("Show all translators")
                                 .foregroundColor(Color(hex: "0D189F"))
                                 .font(.system(size: 16, weight: .semibold))
                                 .padding(.top, 8)
@@ -127,8 +131,55 @@ struct TranslatorCardsView: View {
     }
 }
 
+struct LevelFilterView: View {
+    @ObservedObject var viewModel: TranslationViewModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Select Level")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.black)
+
+            HStack(spacing: 8) {
+                FilterButton(
+                    title: "Beginner",
+                    isSelected: viewModel.selectedLevel == .beginner
+                ) {
+                    if viewModel.selectedLevel == .beginner {
+                        viewModel.clearFilter()
+                    } else {
+                        viewModel.filterByLevel(.beginner)
+                    }
+                }
+
+                FilterButton(
+                    title: "Intermediate",
+                    isSelected: viewModel.selectedLevel == .intermediate
+                ) {
+                    if viewModel.selectedLevel == .intermediate {
+                        viewModel.clearFilter()
+                    } else {
+                        viewModel.filterByLevel(.intermediate)
+                    }
+                }
+
+                FilterButton(
+                    title: "Advanced",
+                    isSelected: viewModel.selectedLevel == .advanced
+                ) {
+                    if viewModel.selectedLevel == .advanced {
+                        viewModel.clearFilter()
+                    } else {
+                        viewModel.filterByLevel(.advanced)
+                    }
+                }
+            }
+        }
+    }
+}
+
 #Preview {
     NavigationView {
-        AllTranslatorsView()
+        AllTranslatorsView(viewModel: TranslationViewModel())
     }
 }

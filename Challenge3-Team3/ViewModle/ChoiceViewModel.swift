@@ -8,7 +8,8 @@ import Foundation
 import Combine
 
 final class ChoiceViewModel: ObservableObject {
-    // Data for the two buttons
+    @Published var selectedChoice: ChoiceType?
+
     let options: [ChoiceOption] = [
         ChoiceOption(
             title: "I want to offer\nsupport",
@@ -19,13 +20,8 @@ final class ChoiceViewModel: ObservableObject {
             type: .needInterpreter
         )
     ]
-    
-    // State for navigation or next step
-    @Published var selectedChoice: ChoiceType? = nil
-    
+
     func handleTap(on option: ChoiceOption) {
         selectedChoice = option.type
-        // Add navigation or routing logic here later
-        // Example: switch on option.type
     }
 }

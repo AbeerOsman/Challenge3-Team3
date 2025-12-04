@@ -10,131 +10,134 @@ import SwiftUI
 struct DeafHome: View {
     @StateObject private var viewModel = TranslationViewModel()
     @Environment(\.layoutDirection) var layoutDirection
+    @Binding var deafName: String
     
+    // ✨ Use @AppStorage to persist user ID
+    @AppStorage("deafUserId") private var deafUserId: String = ""
+
     var body: some View {
         VStack(spacing: 0) {
-            HeaderView()
+            HeaderView(deafName: $deafName)
 
             ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("المترجمين المتاحيين")
+                    Text("Available Translators")
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.black)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
 
-
-                    // Show only 3 translators + "عرض الكل" card
                     TranslatorCardsScrollView(viewModel: viewModel)
 
-                    // Requests section - only show if there are appointments
-                    
-                    Text("طلبات المواعيد")
+                    Text("Appointment Requests")
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.black)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
+                    
                     if !viewModel.appointments.isEmpty {
                         MyRequestsView(viewModel: viewModel)
                             .padding(.horizontal, 8)
                             .padding(.bottom, 40)
-                    }else{
-                        Text("لم يتم إرسال طلبات مواعيد حتى الآن")
+                    } else {
+                        Text("No appointment requests sent yet")
                             .foregroundColor(.gray)
                             .padding(16)
                     }
                 }
             }
         }
+        .onAppear {
+            print("🏠 DeafHome appeared")
+            print("   deafName from binding: '\(deafName)'")
+            print("   deafUserId from AppStorage: '\(deafUserId)'")
+            
+            // If no user ID exists, create one
+            if deafUserId.isEmpty {
+                deafUserId = UUID().uuidString
+                print("Generated new user ID: \(deafUserId)")
+            }
+            
+            // ALWAYS set user info when view appears
+            if !deafName.isEmpty {
+                print("Setting user in ViewModel:")
+                print("ID: \(deafUserId)")
+                print("Name: \(deafName)")
+                viewModel.setDeafUser(userId: deafUserId, name: deafName)
+            } else {
+                print("deafName is empty!")
+            }
+        }
+        .navigationBarBackButtonHidden(true)
         .background(Color(hex: "F2F2F2"))
-        .environment(\.layoutDirection, .rightToLeft)
+        .environment(\.layoutDirection, .leftToRight)
     }
 }
 
 // MARK: - Header View
 struct HeaderView: View {
+    @Binding var deafName: String
+    @State private var showLogoutAlert = false
+    @State private var goToSplash = false
+
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("أهلاً، سارة")
+                Text("Hello, \(deafName)")
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(.black)
                 
-                Text("معك دائمًا، احجز مترجمك وقت ما تحتاج")
+                Text("Always with you, book your translator when you need")
                     .font(.system(size: 14))
                     .foregroundColor(.gray)
             }
             .padding(.leading, 20)
             
             Spacer()
+            
             NavigationLink {
                 MessagesView()
             } label: {
                 VStack(spacing: 4) {
                     Image(systemName: "bubble.left.and.text.bubble.right")
                         .font(.system(size: 24))
-                    Text("الرسائل")
+                    Text("Messages")
                         .font(.system(size: 13))
                 }
                 .foregroundColor(.black)
                 .padding(.trailing, 20)
             }
 
-            
-        }
-        .padding(.vertical, 16)
-        .padding(.top, 40)
-        .background(Color(red: 0.95, green: 0.95, blue: 0.97))
-    }
-}
+            NavigationLink(destination: ChoiceView(), isActive: $goToSplash) {
+                EmptyView()
+            }
 
-// MARK: - Level Filter View
-struct LevelFilterView: View {
-    @ObservedObject var viewModel: TranslationViewModel
+            Button {
+                showLogoutAlert = true
+            } label: {
+                VStack(spacing: 4) {
+                    Image(systemName: "iphone.and.arrow.right.outward")
+                        .font(.system(size: 24))
+                        .foregroundColor(.red)
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("حدد المستوى")
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.black)
-
-            HStack(spacing: 8) {
-                FilterButton(
-                    title: TranslatorLevel.beginner.rawValue,
-                    isSelected: viewModel.selectedLevel == .beginner
-                ) {
-                    if viewModel.selectedLevel == .beginner {
-                        viewModel.clearFilter()
-                    } else {
-                        viewModel.filterByLevel(.beginner)
-                    }
+                    Text("SignOut")
+                        .font(.system(size: 13))
+                        .foregroundColor(.red)
                 }
+                .padding(.trailing, 20)
+            }
+            .alert("Are you sure you want to sign out?", isPresented: $showLogoutAlert) {
+                Button("Cancel", role: .cancel) {}
 
-                FilterButton(
-                    title: TranslatorLevel.intermediate.rawValue,
-                    isSelected: viewModel.selectedLevel == .intermediate
-                ) {
-                    if viewModel.selectedLevel == .intermediate {
-                        viewModel.clearFilter()
-                    } else {
-                        viewModel.filterByLevel(.intermediate)
-                    }
-                }
-
-                FilterButton(
-                    title: TranslatorLevel.advanced.rawValue,
-                    isSelected: viewModel.selectedLevel == .advanced
-                ) {
-                    if viewModel.selectedLevel == .advanced {
-                        viewModel.clearFilter()
-                    } else {
-                        viewModel.filterByLevel(.advanced)
-                    }
+                Button("Sign Out", role: .destructive) {
+                    goToSplash = true
                 }
             }
         }
+        .padding(.vertical, 16)
+        .padding(.top, 40)
     }
 }
 
@@ -147,33 +150,33 @@ struct FilterButton: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: 15))
+                .font(.system(size: 13))
                 .foregroundColor(isSelected ? Color(hex: "0D189F") : .gray)
                 .padding(.horizontal, 24)
                 .padding(.vertical, 10)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
                         .fill(isSelected ? Color(hex: "D8D8D8") : .white)
-                        .frame(width: 77, height: 35)
+                        .frame(width: 100, height: 35)
                 )
         }
     }
 }
 
-// MARK: - My Requests View (UPDATED - Shows only requested appointments)
+// MARK: - My Requests View
 struct MyRequestsView: View {
     @ObservedObject var viewModel: TranslationViewModel
     
     var body: some View {
         VStack(spacing: 12) {
-            ForEach(viewModel.appointments) { translator in
-                requistsappoitments(translator: translator, viewModel: viewModel)
+            ForEach(viewModel.appointments) { appointment in
+                AppointmentCard(appointment: appointment, viewModel: viewModel) // ✅ Correct
             }
         }
     }
 }
 
-// MARK: - Translator Cards Scroll View (UPDATED - Show only 3 translators)
+// MARK: - Translator Cards Scroll View
 struct TranslatorCardsScrollView: View {
     @ObservedObject var viewModel: TranslationViewModel
     @State private var currentPage = 0
@@ -181,42 +184,39 @@ struct TranslatorCardsScrollView: View {
     var body: some View {
         VStack {
             if viewModel.isLoading {
-                ProgressView("جاري التحميل...")
+                ProgressView("Loading...")
                     .frame(height: 180)
                     .padding(24)
             } else if let error = viewModel.errorMessage {
                 VStack(spacing: 8) {
-                    Text("خطأ في تحميل البيانات")
+                    Text("Error loading data")
                         .foregroundColor(.red)
                     Text(error)
                         .font(.caption)
                         .foregroundColor(.gray)
-                    Button("إعادة المحاولة") {
+                    Button("Try Again") {
                         viewModel.fetchTranslators()
                     }
                     .padding(.top, 8)
                 }
                 .frame(height: 180)
             } else if viewModel.limitedTranslators.isEmpty {
-                Text("لا يوجد مترجمين متاحين")
+                Text("No translators available")
                     .foregroundColor(.gray)
                     .frame(height: 180)
             } else {
                 TabView(selection: $currentPage) {
-                    // Show only first 3 translators
                     ForEach(Array(viewModel.limitedTranslators.enumerated()), id: \.offset) { index, translator in
                         TranslatorCard(translator: translator, viewModel: viewModel)
                             .tag(index)
                     }
                     
-                    // "عرض الكل" card as 4th card
-                    SeeAllCard()
+                    SeeAllCard(viewModel: viewModel)
                         .tag(viewModel.limitedTranslators.count)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .frame(height: 180)
                 
-                // Custom page indicator (4 dots: 3 translators + 1 "see all")
                 HStack(spacing: 8) {
                     ForEach(0...viewModel.limitedTranslators.count, id: \.self) { index in
                         Circle()
@@ -230,51 +230,45 @@ struct TranslatorCardsScrollView: View {
     }
 }
 
-// MARK: - Request Appointments Card (UPDATED - with cancel option)
-struct requistsappoitments: View {
-    let translator: TranslatorData
+// MARK: - Appointment Card
+struct AppointmentCard: View {
+    let appointment: AppointmentRequest // ✅ Using AppointmentRequest
     @ObservedObject var viewModel: TranslationViewModel
     
     var body: some View {
         HStack(spacing: 0) {
-            // Info section
             VStack(alignment: .leading, spacing: 12) {
-                // Name + image
                 HStack(spacing: 12) {
                     Image(systemName: "person.crop.circle.fill")
                         .foregroundColor(Color(hex: "787880"))
                         .font(.system(size: 48, weight: .medium))
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(translator.name)
+                        Text(appointment.translatorName) // ✅ From appointment
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(Color(hex: "1A1A1A"))
                         
                         HStack(spacing: 4) {
                             Circle()
-                                .fill(translator.state == "متطوع" ? Color(hex: "5CB853") : Color(hex: "EBA0A0"))
+                                .fill(appointment.translatorCategory == "متطوع" ? Color(hex: "5CB853") : Color(hex: "EBA0A0"))
                                 .frame(width: 6, height: 6)
                             
-                            Text(translator.state)
+                            Text(appointment.translatorCategory == "متطوع" ? "Volunteer" : "Paid")
                                 .font(.system(size: 13, weight: .medium))
-                                .foregroundColor(
-                                    translator.state == "متطوع" ? Color(hex: "5CB853") : Color(hex: "EBA0A0")
-                                )
+                                .foregroundColor(appointment.translatorCategory == "متطوع" ? Color(hex: "5CB853") : Color(hex: "EBA0A0"))
                         }
                     }
                 }
                 
-                // Tags with modern design
                 HStack(spacing: 8) {
-                    TagView(text: translator.gender, icon: "person.fill")
-                    TagView(text: translator.age, icon: "calendar")
-                    TagView(text: translator.level, icon: "star.fill")
+                    TagView(text: appointment.translatorGender, icon: "person.fill")
+                    TagView(text: appointment.translatorAge, icon: "calendar")
+                    TagView(text: appointment.translatorLevel, icon: "star.fill")
                 }
             }
             .padding(.leading, 16)
             .padding(.trailing, 8)
             
-            // Elegant divider
             Rectangle()
                 .fill(
                     LinearGradient(
@@ -289,11 +283,10 @@ struct requistsappoitments: View {
                 )
                 .frame(width: 1, height: 100)
             
-            // Price section with cancel button
             VStack(spacing: 8) {
                 VStack(spacing: 2) {
                     HStack(spacing: 4) {
-                        Text(translator.price)
+                        Text(appointment.translatorPrice)
                             .font(.system(size: 28, weight: .bold))
                             .foregroundColor(Color(hex: "0D189F"))
                         
@@ -303,18 +296,23 @@ struct requistsappoitments: View {
                             .frame(width: 22, height: 22)
                     }
                     
-                    Text("السعر بالساعة")
+                    Text("Per Hour")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(Color(hex: "9E9E9E"))
                 }
                 
-                // Cancel button
+                // ✨ FIXED Cancel button
                 Button {
-                    viewModel.cancelAppointment(for: translator)
+                    if let appointmentId = appointment.id {
+                        print("🗑️ Cancel button pressed for appointment: \(appointmentId)")
+                        viewModel.cancelAppointment(appointmentId: appointmentId)
+                    } else {
+                        print("❌ Appointment ID is nil!")
+                    }
                 } label: {
                     HStack {
                         Image(systemName: "xmark.circle.fill")
-                        Text("إلغاء الطلب")
+                        Text("Cancel")
                     }
                     .foregroundColor(.white)
                     .font(.system(size: 13, weight: .semibold))
@@ -339,7 +337,7 @@ struct requistsappoitments: View {
     }
 }
 
-// MARK: - Translator Card (UPDATED - with viewModel)
+// MARK: - Translator Card
 struct TranslatorCard: View {
     let translator: TranslatorData
     @ObservedObject var viewModel: TranslationViewModel
@@ -347,9 +345,7 @@ struct TranslatorCard: View {
     
     var body: some View {
         HStack(spacing: 0) {
-            // Info section
             VStack(alignment: .leading, spacing: 12) {
-                // Name + image
                 HStack(spacing: 12) {
                     Image(systemName: "person.crop.circle.fill")
                         .foregroundColor(Color(hex: "787880"))
@@ -365,26 +361,22 @@ struct TranslatorCard: View {
                                 .fill(translator.state == "متطوع" ? Color(hex: "5CB853") : Color(hex: "EBA0A0"))
                                 .frame(width: 6, height: 6)
                             
-                            Text(translator.state)
+                            Text(translator.state == "متطوع" ? "Volunteer" : "Paid")
                                 .font(.system(size: 13, weight: .medium))
-                                .foregroundColor(
-                                    translator.state == "متطوع" ? Color(hex: "5CB853") : Color(hex: "EBA0A0")
-                                )
+                                .foregroundColor(translator.state == "متطوع" ? Color(hex: "5CB853") : Color(hex: "EBA0A0"))
                         }
                     }
                 }
                 
-                // Tags with modern design
                 HStack(spacing: 8) {
                     TagView(text: translator.gender, icon: "person.fill")
                     TagView(text: translator.age, icon: "calendar")
                     TagView(text: translator.level, icon: "star.fill")
                 }
             }
-            .padding(.leading, 16)
+            .padding(.leading, 8)
             .padding(.trailing, 8)
             
-            // Elegant divider
             Rectangle()
                 .fill(
                     LinearGradient(
@@ -399,7 +391,6 @@ struct TranslatorCard: View {
                 )
                 .frame(width: 1, height: 100)
             
-            // Price section with modern styling
             VStack(spacing: 8) {
                 VStack(spacing: 2) {
                     HStack(spacing: 4) {
@@ -413,7 +404,7 @@ struct TranslatorCard: View {
                             .frame(width: 22, height: 22)
                     }
                     
-                    Text("السعر بالساعة")
+                    Text("Per Hour")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(Color(hex: "9E9E9E"))
                 }
@@ -423,7 +414,7 @@ struct TranslatorCard: View {
                         showRequistSheet = true
                     } label: {
                         HStack {
-                            Text("أطلب موعد")
+                            Text("Request")
                                 .foregroundColor(.white)
                                 .font(.system(size: 14, weight: .semibold))
                         }
@@ -473,7 +464,7 @@ struct TagView: View {
                 .foregroundColor(Color(hex: "666666"))
             
             Text(text)
-                .font(.system(size: 12, weight: .medium))
+                .font(.system(size: 10, weight: .medium))
                 .foregroundColor(Color(hex: "666666"))
         }
         .padding(.horizontal, 10)
@@ -490,17 +481,20 @@ struct TagView: View {
 }
 
 // MARK: - See All Card
+// MARK: - See All Card
 struct SeeAllCard: View {
+    @ObservedObject var viewModel: TranslationViewModel // ✨ Add this
+    
     var body: some View {
         NavigationLink {
-            AllTranslatorsView()
+            AllTranslatorsView(viewModel: viewModel) // ✨ Pass the viewModel
         } label: {
             VStack(spacing: 20) {
-                Image(systemName: "arrow.left")
+                Image(systemName: "arrow.right")
                     .font(.system(size: 40, weight: .semibold))
                     .foregroundColor(Color(hex: "0D189F"))
                 
-                Text("عرض الكل")
+                Text("See All")
                     .font(.system(size: 22, weight: .bold))
                     .foregroundColor(Color(hex: "1A1A1A"))
             }
@@ -519,7 +513,6 @@ struct SeeAllCard: View {
         }
     }
 }
-
 // MARK: - Color Extension
 extension Color {
     init(hex: String) {
@@ -528,11 +521,11 @@ extension Color {
         Scanner(string: hex).scanHexInt64(&int)
         let a, r, g, b: UInt64
         switch hex.count {
-        case 3: // RGB (12-bit)
+        case 3:
             (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-        case 6: // RGB (24-bit)
+        case 6:
             (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-        case 8: // ARGB (32-bit)
+        case 8:
             (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
         default:
             (a, r, g, b) = (1, 1, 1, 0)
@@ -543,14 +536,13 @@ extension Color {
             red: Double(r) / 255,
             green: Double(g) / 255,
             blue:  Double(b) / 255,
-            opacity: Double(a) / 255
-        )
+            opacity: Double(a) / 255)
     }
 }
 
-// MARK: - Preview
 #Preview {
-    NavigationView {
-        DeafHome()
+    @State var previewName = ""
+    return NavigationView {
+        DeafHome(deafName: $previewName)
     }
 }

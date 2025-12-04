@@ -2,25 +2,25 @@ import Foundation
 import FirebaseFirestore
 
 enum Gender: String, CaseIterable, Identifiable, Codable {
-    case male = "ذكر"
-    case female = "أنثى"
+    case male = "Male"
+    case female = "Female"
     var id: String { rawValue }
 }
 
 enum Level: String, CaseIterable, Identifiable, Codable {
-    case beginner = "مبتدئ"
-    case intermediate = "متوسط"
-    case advanced = "متقدم"
+    case beginner = "Beginner"
+    case intermediate = "Intermediate"
+    case advanced = "Advanced"
     var id: String { rawValue }
 }
 
 enum Plan: String, CaseIterable, Identifiable, Codable {
-    case free = "متطوع"
-    case paid = "مدفوع"
+    case free = "Volunteer"
+    case paid = "Paid"
     var id: String { rawValue }
 }
 
-// شوية مساعدات لتطبيع النص العربي عشان المطابقة تكون أسهل
+// Arabic normalization helpers (kept same logic)
 private extension String {
     var trimmedLowercased: String {
         trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -48,14 +48,14 @@ private func matchArabic(_ raw: String, candidates: [String]) -> Bool {
     return candidates.map { $0.normalizeArabic() }.contains(n)
 }
 
-// تفكيك وترميز مرن للأنواع عشان نقبل صيغ مختلفة
+// Flexible decoding/encoding
 extension Gender {
     init(from decoder: Decoder) throws {
         let c = try decoder.singleValueContainer()
         if let raw = try? c.decode(String.self) {
             let t = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-            if matchArabic(t, candidates: [Gender.male.rawValue]) { self = .male; return }
-            if matchArabic(t, candidates: [Gender.female.rawValue]) { self = .female; return }
+            if matchArabic(t, candidates: ["ذكر", "Male"]) { self = .male; return }
+            if matchArabic(t, candidates: ["أنثى", "Female"]) { self = .female; return }
             switch t.lowercased() {
             case "male", "m": self = .male
             case "female", "f": self = .female
@@ -87,9 +87,9 @@ extension Level {
         let c = try decoder.singleValueContainer()
         if let raw = try? c.decode(String.self) {
             let t = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-            if matchArabic(t, candidates: [Level.beginner.rawValue]) { self = .beginner; return }
-            if matchArabic(t, candidates: [Level.intermediate.rawValue]) { self = .intermediate; return }
-            if matchArabic(t, candidates: [Level.advanced.rawValue]) { self = .advanced; return }
+            if matchArabic(t, candidates: ["مبتدئ", "Beginner"]) { self = .beginner; return }
+            if matchArabic(t, candidates: ["متوسط", "Intermediate"]) { self = .intermediate; return }
+            if matchArabic(t, candidates: ["متقدم", "Advanced"]) { self = .advanced; return }
             switch t.lowercased() {
             case "beginner", "beg", "b", "0": self = .beginner
             case "intermediate", "mid", "i", "1": self = .intermediate
@@ -123,10 +123,14 @@ extension Plan {
         let c = try decoder.singleValueContainer()
         if let raw = try? c.decode(String.self) {
             let t = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-            if matchArabic(t, candidates: [Plan.free.rawValue, "متطوعه", "تطوع", "متطوع"]) { self = .free; return }
-            if matchArabic(t, candidates: [Plan.paid.rawValue]) { self = .paid; return }
+            if matchArabic(t, candidates: ["متطوع", "متطوعه", "تطوع", "Volunteer"]) {
+                self = .free; return
+            }
+            if matchArabic(t, candidates: ["مدفوع", "Paid"]) {
+                self = .paid; return
+            }
             switch t.lowercased() {
-            case "free", "volunteer", "mutatawi", "mutataweh", "0": self = .free
+            case "free", "volunteer", "0": self = .free
             case "paid", "1": self = .paid
             default:
                 throw DecodingError.dataCorruptedError(in: c, debugDescription: "Unknown plan: \(raw)")
@@ -151,7 +155,7 @@ extension Plan {
     }
 }
 
-// نموذج المستخدم
+// User model
 struct UserProfile: Identifiable, Codable {
     @DocumentID var id: String?
     var name: String

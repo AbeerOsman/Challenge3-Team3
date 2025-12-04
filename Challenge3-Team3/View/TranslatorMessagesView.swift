@@ -1,21 +1,30 @@
+
+
 import SwiftUI
 
-// MARK: - TranslatorMessagesView
-// شاشة بسيطة لعرض رسائل المترجم.
-// - حالياً تعرض رسالة فارغة افتراضية.
-// - موضوعة داخل NavigationView مع عنوان في الـ Navigation Bar.
 struct TranslatorMessagesView: View {
     var body: some View {
         NavigationView {
             VStack {
-                // محتوى الرسائل المبدئي (Placeholder)
-                Text("لا توجد رسائل حالياً")
-                    .foregroundColor(.secondary)
-                    .padding()
+                Spacer()
+
+                VStack(spacing: 12) {
+                    Image(systemName: "bubble.left.and.text.bubble.right")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 55, height: 55)
+                        .foregroundColor(.gray.opacity(0.7))
+
+                    Text("No messages available")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.center)
+                }
 
                 Spacer()
             }
-            .navigationTitle("رسائلي كمترجم")
+            .frame(maxWidth: .infinity)
+            .navigationTitle("Messages")
             .navigationBarTitleDisplayMode(.inline)
         }
     }
