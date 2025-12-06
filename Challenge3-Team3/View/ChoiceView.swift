@@ -1,147 +1,157 @@
-//
-//  ChoiceView.swift
-//  Challenge3-Team3
-//
-//  Created by alya Alabdulrahim on 10/06/1447 AH.
-//
 import SwiftUI
 
-// MARK: - Main View
 struct ChoiceView: View {
+    @EnvironmentObject private var appStateManager: AppStateManager
     @StateObject private var authViewModel = AuthViewModel()
     @StateObject private var choiceViewModel = ChoiceViewModel()
 
     @State private var showDeafNameSheet = false
-    @State private var navigateToDeafHome = false
     @State private var deafName: String = ""
+    
+    private let corner: CGFloat = 14
 
     var body: some View {
         NavigationStack {
             ZStack {
-                Color("darkblue")
-                    .ignoresSafeArea()
+                Color(.systemBackground).ignoresSafeArea()
 
-                VStack(spacing: 20) {
-                    Spacer(minLength: 200)
+                VStack(spacing: 24) {
+                    Spacer(minLength: 28)
 
-                    ChoiceHeaderView()
+                    VStack(spacing: 8) {
+                        Text("Community Connect")
+                            .font(.system(size: 28, weight: .semibold))
+                            .foregroundColor(.primary)
 
-                    ButtonsView(
-                        options: choiceViewModel.options,
-                        authViewModel: authViewModel,
-                        showDeafNameSheet: $showDeafNameSheet,
-                        onSelection: { option in
-                            choiceViewModel.handleTap(on: option)
-                            authViewModel.saveRole(for: option.type)
+                        Text("where signs are understood and heard.")
+                            .font(.system(size: 15))
+                            .foregroundColor(.secondary)
+                    }
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 28)
+
+                    VStack(spacing: 18) {
+                        let cols = [GridItem(.adaptive(minimum: 320), spacing: 16)]
+                        LazyVGrid(columns: cols, spacing: 16) {
+                            ForEach(choiceViewModel.options) { option in
+                                if option.type == .needInterpreter {
+                                    // Deaf person requesting interpreter
+                                    Button(action: {
+                                        choiceViewModel.handleTap(on: option)
+                                        authViewModel.saveRole(for: option.type)
+                                        showDeafNameSheet = true
+                                    }) {
+                                        CardContent(
+                                            title: option.title,
+                                            subtitle: "Request a live interpreter",
+                                            systemName: "ear.fill",
+                                            accent: .indigo
+                                        )
+                                    }
+                                    .buttonStyle(CardButtonStyle())
+                                    .accessibilityLabel("\(option.title). Request a live interpreter.")
+                                    
+                                } else {
+                                    // Interpreter offering support
+                                    NavigationLink(destination: InterpreterTabView()) {
+                                        CardContent(
+                                            title: option.title,
+                                            subtitle: "Join as an interpreter",
+                                            systemName: "person.2.fill",
+                                            accent: .teal
+                                        )
+                                    }
+                                    .simultaneousGesture(TapGesture().onEnded {
+                                        choiceViewModel.handleTap(on: option)
+                                        authViewModel.saveRole(for: option.type)
+                                        appStateManager.setUserRole("interpreter")
+                                    })
+                                    .buttonStyle(PlainButtonStyle())
+                                    .accessibilityLabel("\(option.title). Join as an interpreter.")
+                                }
+                            }
                         }
+                        .animation(.easeInOut, value: choiceViewModel.options.count)
+                    }
+                    .padding(18)
+                    .background(
+                        RoundedRectangle(cornerRadius: corner)
+                            .fill(Color(.systemBackground))
+                            .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 8)
                     )
-                    .padding(.bottom, 300)
+                    .padding(.horizontal, 20)
+
+                    Spacer()
                 }
-                .padding()
             }
-            .navigationBarBackButtonHidden(true)
+            .navigationBarBackButtonHidden(false)  // Keep back button hidden on ChoiceView
             .sheet(isPresented: $showDeafNameSheet) {
                 DeafNameSheet(
                     authViewModel: authViewModel,
-                    navigateToDeafHome: $navigateToDeafHome,
+                    navigateToDeafHome: .constant(false),
                     isPresented: $showDeafNameSheet,
-                    deafName: $deafName
+                    deafName: $deafName,
+                    onSave: {
+                        appStateManager.setUserRole("requester", deafName: deafName)
+                    }
                 )
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.hidden)
             }
-            // Modern iOS 16+ navigation for Bool-driven destination
-            .navigationDestination(isPresented: $navigateToDeafHome) {
-                DeafHome(deafName: $deafName)
-            }
         }
     }
 }
 
-// MARK: - Header
-struct ChoiceHeaderView: View {
-    var body: some View {
-        ZStack {
-            Text("This is where signs are understood,\nvoices are heard,\nand the community connects.")
-                .font(.system(size: 30))
-                .bold()
-                .foregroundColor(.white)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 320)
-        }
-        .frame(maxWidth: .infinity, minHeight: 420)
-        .padding(.horizontal)
-    }
-}
-
-// MARK: - Buttons container
-struct ButtonsView: View {
-    let options: [ChoiceOption]
-    let authViewModel: AuthViewModel
-    @Binding var showDeafNameSheet: Bool
-    let onSelection: (ChoiceOption) -> Void
-
-    var body: some View {
-        HStack(spacing: 20) {
-            ForEach(options) { option in
-
-                if option.type == .needInterpreter {
-                    Button {
-                        onSelection(option)
-                        showDeafNameSheet = true
-                    } label: {
-                        ChoiceButton(title: option.title)
-                    }
-
-                } else {
-                    NavigationLink {
-                        destination(for: option.type)
-                    } label: {
-                        ChoiceButton(title: option.title)
-                    }
-                    .simultaneousGesture(
-                        TapGesture().onEnded {
-                            onSelection(option)
-                        }
-                    )
-                }
-            }
-        }
-        .padding(.horizontal)
-    }
-
-    @ViewBuilder
-    private func destination(for type: ChoiceType) -> some View {
-        switch type {
-        case .offerSupport:
-            InterpreterTabView()   // NEW: tab bar for interpreters
-        case .needInterpreter:
-            EmptyView()
-        }
-    }
-}
-
-// MARK: - Choice Button
-struct ChoiceButton: View {
+// MARK: - Card content shared view
+struct CardContent: View {
     let title: String
+    let subtitle: String
+    let systemName: String
+    let accent: Color
 
     var body: some View {
-        Text(title)
-            .font(.system(size: 20))
-            .bold()
-            .foregroundColor(.black)
-            .multilineTextAlignment(.center)
-            .frame(maxWidth: .infinity)
-            .frame(height: 200)
-            .background(
-                RoundedRectangle(cornerRadius: 25)
-                    .fill(Color.white.opacity(0.9))
-                    .shadow(radius: 20)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 25)
-                    .stroke(Color.white, lineWidth: 6)
-            )
+        HStack(spacing: 14) {
+            RoundedRectangle(cornerRadius: 10)
+                .fill(accent.opacity(0.15))
+                .frame(width: 72, height: 72)
+                .overlay(
+                    Image(systemName: systemName)
+                        .font(.system(size: 28, weight: .semibold))
+                        .foregroundColor(accent)
+                )
+                .accessibilityHidden(true)
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title)
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundColor(.primary)
+                    .lineLimit(2)
+                Text(subtitle)
+                    .font(.system(size: 13))
+                    .foregroundColor(.secondary)
+            }
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(Color(.tertiaryLabel))
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.systemGray6))
+        )
+    }
+}
+
+// MARK: - Button press style
+struct CardButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.987 : 1.0)
+            .opacity(configuration.isPressed ? 0.98 : 1.0)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
     }
 }
 
@@ -149,5 +159,6 @@ struct ChoiceButton: View {
 struct ChoiceView_Previews: PreviewProvider {
     static var previews: some View {
         ChoiceView()
+            .environmentObject(AppStateManager())
     }
 }

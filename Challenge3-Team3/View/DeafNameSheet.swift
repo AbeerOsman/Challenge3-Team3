@@ -5,6 +5,7 @@ struct DeafNameSheet: View {
     @Binding var navigateToDeafHome: Bool
     @Binding var isPresented: Bool
     @Binding var deafName: String
+    var onSave: (() -> Void)? = nil
 
     @State private var validationMessage: String?
 
@@ -20,17 +21,13 @@ struct DeafNameSheet: View {
                 .foregroundColor(.primary)
                 .padding(.top, 8)
 
-            Text("We’ll use this to personalize your experience and let translators know who is requesting help.")
+            Text("We'll use this to personalize your experience and let translators know who is requesting help.")
                 .font(.system(size: 14))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("Name")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.secondary)
-
                 TextField("Your name", text: $deafName)
                     .textInputAutocapitalization(.words)
                     .autocorrectionDisabled()
@@ -96,9 +93,11 @@ struct DeafNameSheet: View {
         // Persist profile
         authViewModel.createDeafUserProfile(name: trimmed)
 
-        // Dismiss sheet and navigate
+        // Call the onSave callback (which updates AppStateManager)
+        onSave?()
+
+        // Dismiss sheet
         isPresented = false
-        navigateToDeafHome = true
     }
 }
 
@@ -116,10 +115,10 @@ private struct StatefulPreview: View {
             authViewModel: AuthViewModel(),
             navigateToDeafHome: $nav,
             isPresented: $show,
-            deafName: $name
+            deafName: $name,
+            onSave: {
+                print("Name saved and AppStateManager updated")
+            }
         )
     }
 }
-
-// Reuse Color(hex:) from your project if needed.
-// If this file doesn’t see that extension, you can copy it or import it via a shared file.

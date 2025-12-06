@@ -17,25 +17,29 @@ struct RequistSheet: View {
                         .font(.system(size: 20))
                         .foregroundColor(.gray)
                 }
-                
                 Spacer()
-                
-                Text("Request Appointment")
-                    .font(.system(size: 22, weight: .bold))
-                
-                Spacer()
-                
                 Color.clear.frame(width: 20, height: 20)
             }
             .padding(.horizontal, 24)
             .padding(.top, 20)
             
-            Divider()
             
             VStack(spacing: 16) {
-                Image(systemName: "person.crop.circle.fill")
-                    .font(.system(size: 80))
-                    .foregroundColor(Color(hex: "787880"))
+                if translator.gender == "Female" {
+                    Image(.femaleIcon)
+                        .resizable()
+                        .renderingMode(.template)
+                        .scaledToFit()
+                        .frame(width: 70, height: 70)
+                        .foregroundColor(Color(hex: "DC7F7F"))
+                } else {
+                    Image(.maleIcon)
+                        .resizable()
+                        .renderingMode(.template)
+                        .scaledToFit()
+                        .frame(width: 70, height: 70)
+                        .foregroundColor(Color(hex: "092B6F"))
+                }
                 
                 Text(translator.name)
                     .font(.system(size: 24, weight: .bold))
@@ -66,12 +70,12 @@ struct RequistSheet: View {
             
             VStack(spacing: 12) {
 
-                Text("Are you sure you want to send the request to the translator?")
+                Text("Are you sure you want to send the request to the interpreter?")
                     .font(.system(size: 20, weight: .bold))
                     .multilineTextAlignment(.center)
                     .foregroundColor(.black)
 
-                Text("Once your request is sent, the translator will respond to you.")
+                Text("Once your request is sent, the interpreter will respond to you.")
                     .font(.subheadline)
                     .multilineTextAlignment(.center)
                     .foregroundColor(.black)

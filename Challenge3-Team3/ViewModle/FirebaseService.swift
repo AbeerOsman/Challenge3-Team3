@@ -5,24 +5,28 @@ class FirebaseService {
     static let shared = FirebaseService()
     private let db = Firestore.firestore()
     
+    private var translatorsListener: ListenerRegistration?
+    private var appointmentsListener: ListenerRegistration?
+    
     private init() {
-        print("FirebaseService initialized")
+        print("🔥 FirebaseService initialized")
     }
     
-    // MARK: - Fetch all translators
     func fetchTranslators(completion: @escaping (Result<[TranslatorData], Error>) -> Void) {
-        print("🔍 Starting to fetch translators...")
+        print("🔍 Setting up translators listener...")
         
-        db.collection("users")
-            .getDocuments { snapshot, error in
+        translatorsListener?.remove()
+        
+        translatorsListener = db.collection("users")
+            .addSnapshotListener { snapshot, error in
                 if let error = error {
-                    print("❌ Error fetching translators: \(error.localizedDescription)")
+                    print("Error fetching translators: \(error.localizedDescription)")
                     completion(.failure(error))
                     return
                 }
                 
                 guard let documents = snapshot?.documents else {
-                    print("⚠️ No documents found in snapshot")
+                    print("No documents found in snapshot")
                     completion(.success([]))
                     return
                 }
@@ -49,7 +53,6 @@ class FirebaseService {
                     }
                     
                     guard !name.isEmpty && !level.isEmpty else {
-                        print("⏭️ Skipping document \(doc.documentID) - missing essential fields")
                         return nil
                     }
                     
@@ -64,18 +67,19 @@ class FirebaseService {
                     )
                 }
                 
-                print("✅ Successfully created \(translators.count) translator objects")
+                print("Successfully created \(translators.count) translator objects")
                 completion(.success(translators))
             }
     }
     
-    // MARK: - Fetch translators by level
     func fetchTranslatorsByLevel(level: String, completion: @escaping (Result<[TranslatorData], Error>) -> Void) {
-        print("🔍 Fetching translators with level: \(level)")
+        print("🔍 Setting up level filter listener for: \(level)")
         
-        db.collection("users")
+        translatorsListener?.remove()
+        
+        translatorsListener = db.collection("users")
             .whereField("level", isEqualTo: level)
-            .getDocuments { snapshot, error in
+            .addSnapshotListener { snapshot, error in
                 if let error = error {
                     print("❌ Error filtering translators: \(error.localizedDescription)")
                     completion(.failure(error))
@@ -88,7 +92,7 @@ class FirebaseService {
                     return
                 }
                 
-                print("Found \(documents.count) translators with level: \(level)")
+                print("📦 Found \(documents.count) translators with level: \(level)")
                 
                 let translators = documents.compactMap { doc -> TranslatorData? in
                     let data = doc.data()
@@ -128,22 +132,16 @@ class FirebaseService {
             }
     }
     
-    // MARK: - ✨ NEW: Create Appointment Request
-    func createAppointment(deafUserId: String, deafName: String, translator: TranslatorData, completion: @escaping (Result<String, Error>) -> Void) {
+    // ✨ UPDATED: Only store translator ID
+    func createAppointment(deafUserId: String, deafName: String, translatorId: String, completion: @escaping (Result<String, Error>) -> Void) {
         print("📝 Creating appointment request...")
         print("   Deaf User: \(deafName) (\(deafUserId))")
-        print("   Translator: \(translator.name)")
+        print("   Translator ID: \(translatorId)")
         
         let appointmentData: [String: Any] = [
             "deafUserId": deafUserId,
             "deafName": deafName,
-            "translatorId": translator.id,
-            "translatorName": translator.name,
-            "translatorGender": translator.gender,
-            "translatorAge": translator.age,
-            "translatorLevel": translator.level,
-            "translatorPrice": translator.price,
-            "translatorCategory": translator.category,
+            "translatorId": translatorId,  // ✨ Only store ID
             "createdAt": FieldValue.serverTimestamp()
         ]
         
@@ -159,11 +157,12 @@ class FirebaseService {
         }
     }
     
-    // MARK: - ✨ NEW: Fetch User's Appointments
     func fetchUserAppointments(userId: String, completion: @escaping (Result<[AppointmentRequest], Error>) -> Void) {
-        print("🔍 Fetching appointments for user: \(userId)")
+        print("🔍 Setting up appointments listener for user: \(userId)")
         
-        db.collection("appointments")
+        appointmentsListener?.remove()
+        
+        appointmentsListener = db.collection("appointments")
             .whereField("deafUserId", isEqualTo: userId)
             .order(by: "createdAt", descending: true)
             .addSnapshotListener { snapshot, error in
@@ -197,7 +196,6 @@ class FirebaseService {
             }
     }
     
-    // MARK: - ✨ NEW: Delete Appointment
     func deleteAppointment(appointmentId: String, completion: @escaping (Result<Void, Error>) -> Void) {
         print("🗑️ Deleting appointment: \(appointmentId)")
         
@@ -211,5 +209,11 @@ class FirebaseService {
             print("✅ Appointment deleted successfully")
             completion(.success(()))
         }
+    }
+    
+    func removeAllListeners() {
+        print("🧹 Removing all Firebase listeners")
+        translatorsListener?.remove()
+        appointmentsListener?.remove()
     }
 }

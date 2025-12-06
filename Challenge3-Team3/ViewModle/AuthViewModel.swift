@@ -1,9 +1,3 @@
-//
-//  AuthViewModel.swift
-//  Challenge3-Team3
-//
-//  Created by alya Alabdulrahim on 10/06/1447 AH.
-//
 import Foundation
 import Combine
 import FirebaseAuth
@@ -11,11 +5,18 @@ import FirebaseFirestore
 
 final class AuthViewModel: ObservableObject {
     @Published var user: User?
+    @Published var userRole: String? // "interpreter" or "requester"
 
     private let db = Firestore.firestore()
+    
+    // Key for storing user choice locally
+    private let roleStorageKey = "userRole"
 
     init() {
         user = Auth.auth().currentUser
+        
+        // Load saved role from UserDefaults
+        userRole = UserDefaults.standard.string(forKey: roleStorageKey)
 
         if user == nil {
             Auth.auth().signInAnonymously { [weak self] result, error in
@@ -44,6 +45,13 @@ final class AuthViewModel: ObservableObject {
             role = "requester"
         }
 
+        // Save to UserDefaults for quick local access
+        UserDefaults.standard.set(role, forKey: roleStorageKey)
+        DispatchQueue.main.async {
+            self.userRole = role
+        }
+
+        // Also save to Firestore
         db.collection("users")
             .document(uid)
             .setData(["role": role], merge: true) { error in
@@ -71,5 +79,18 @@ final class AuthViewModel: ObservableObject {
                     print("Deaf user profile saved")
                 }
             }
+    }
+    
+    // Check if user has already made a choice
+    func hasUserMadeChoice() -> Bool {
+        return userRole != nil
+    }
+    
+    // Clear saved role (for logout)
+    func clearRole() {
+        UserDefaults.standard.removeObject(forKey: roleStorageKey)
+        DispatchQueue.main.async {
+            self.userRole = nil
+        }
     }
 }

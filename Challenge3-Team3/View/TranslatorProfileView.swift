@@ -16,7 +16,7 @@ struct TranslatorProfileView: View {
             backgroundColor.ignoresSafeArea()
 
             ScrollView {
-                TranslatorHeaderView()
+                
                 VStack(spacing: 16) {
 
                     inputCard {
@@ -256,43 +256,5 @@ struct CenteredAlertView: View {
         }
         .transition(.scale)
         .animation(.spring(), value: message)
-    }
-}
-
-struct TranslatorHeaderView: View {
-    @State private var showLogoutAlert = false
-    @State private var goToSplash = false
-
-    var body: some View {
-        HStack {
-            Spacer()
-
-            Button {
-                showLogoutAlert = true
-            } label: {
-                VStack(spacing: 4) {
-                    Image(systemName: "iphone.and.arrow.right.outward")
-                        .font(.system(size: 24))
-                        .foregroundColor(.red)
-
-                    Text("SignOut")
-                        .font(.system(size: 13))
-                        .foregroundColor(.red)
-                }
-                .padding(.trailing, 20)
-            }
-            .alert("Are you sure you want to sign out?", isPresented: $showLogoutAlert) {
-                Button("Cancel", role: .cancel) {}
-                Button("Sign Out", role: .destructive) {
-                    goToSplash = true
-                }
-            }
-
-            // Hidden NavigationLink
-            NavigationLink(destination: ChoiceView(), isActive: $goToSplash) {
-                EmptyView()
-            }
-        }
-        .padding(.vertical, 16)
     }
 }
