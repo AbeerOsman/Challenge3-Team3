@@ -17,3 +17,4 @@ struct ChoiceOption: Identifiable {
     let title: String
     let type: ChoiceType
 }
+

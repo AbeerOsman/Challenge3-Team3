@@ -11,14 +11,14 @@ struct InterpreterTabView: View {
     var body: some View {
         TabView {
 
-            // 1️⃣ Profile Tab
+            // Profile Tab
             TranslatorProfileView()
                 .tabItem {
                     Image(systemName: "person.crop.circle")
                     Text("Profile")
                 }
 
-            // 2️⃣ Messages Tab
+            // Messages Tab
             MessagesView()
                 .tabItem {
                     Image(systemName: "bubble.left.and.bubble.right")
@@ -26,7 +26,7 @@ struct InterpreterTabView: View {
                 }
 
           
-        }
+        }.tint(Color("darkblue"))
     }
 }
 

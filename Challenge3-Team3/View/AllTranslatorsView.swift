@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct AllTranslatorsView: View {
-    @ObservedObject var viewModel: TranslationViewModel // ✨ Changed from @StateObject to @ObservedObject
+    @ObservedObject var viewModel: TranslationViewModel
+    @Environment(\.scenePhase) var scenePhase
     
     var body: some View {
         ZStack {
@@ -31,10 +32,8 @@ struct AllTranslatorsView: View {
             print("📋 AllTranslatorsView appeared")
             print("   ViewModel User ID: \(viewModel.deafUserId)")
             print("   ViewModel User Name: \(viewModel.deafName)")
-            
-            if viewModel.translators.isEmpty {
-                viewModel.fetchTranslators()
-            }
+            viewModel.clearFilter()
+            viewModel.fetchTranslators()
         }
     }
 }
@@ -125,7 +124,6 @@ struct TranslatorCardsView: View {
                     }
                 }
                 .padding(.horizontal, 16)
-                .padding(.bottom, 20)
             }
         }
     }
@@ -178,8 +176,33 @@ struct LevelFilterView: View {
     }
 }
 
+// MARK: - Filter Button
+struct FilterButton: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 15, weight: .medium))
+                .foregroundColor(isSelected ? Color(hex: "0D189F") : .gray)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(isSelected ? Color(hex: "D8D8D8") : .white)
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(hex: "EEEEEE"), lineWidth: 1))
+                )
+                .fixedSize()
+        }
+    }
+}
+
+
 #Preview {
     NavigationView {
         AllTranslatorsView(viewModel: TranslationViewModel())
+            .environmentObject(TranslationViewModel())
     }
 }
