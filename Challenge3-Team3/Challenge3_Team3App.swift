@@ -10,7 +10,14 @@ struct Challenge3_Team3App: App {
 
     var body: some Scene {
         WindowGroup {
-            splash() 
+//            splash()
+            LiveChatView(
+                currentUserId: "user123",
+                currentUserName: "Me",
+                recipientUserId: "user456",
+                recipientName: "John Doe",
+                recipientContact: "1234567890"
+            )
         }
     }
 }

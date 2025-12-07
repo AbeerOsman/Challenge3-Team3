@@ -10,17 +10,19 @@ import Foundation
 struct Message: Identifiable, Codable {
     let id: String
     let text: String
-    let isUser: Bool
+    let senderId: String      // ← Who sent it
+    let senderName: String    // ← Sender's name
     let timestamp: Date
     
     init(id: String = UUID().uuidString,
          text: String,
-         isUser: Bool,
+         senderId: String,
+         senderName: String,
          timestamp: Date = Date()) {
         self.id = id
         self.text = text
-        self.isUser = isUser
+        self.senderId = senderId
+        self.senderName = senderName
         self.timestamp = timestamp
     }
 }
-

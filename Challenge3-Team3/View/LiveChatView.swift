@@ -10,8 +10,36 @@ import SwiftUI
 
 struct LiveChatView: View {
     
-    @StateObject var viewModel = LiveChatViewModel()
+    @StateObject var viewModel: LiveChatViewModel
     
+    let currentUserId: String
+        let currentUserName: String
+        let recipientUserId: String
+        let recipientName: String
+        let recipientContact: String
+    
+    
+    // Custom initializer
+    init(currentUserId: String,
+         currentUserName: String,
+         recipientUserId: String,
+         recipientName: String,
+         recipientContact: String) {
+        
+        self.currentUserId = currentUserId
+        self.currentUserName = currentUserName
+        self.recipientUserId = recipientUserId
+        self.recipientName = recipientName
+        self.recipientContact = recipientContact
+        
+        // Initialize ViewModel with user IDs
+        _viewModel = StateObject(wrappedValue: LiveChatViewModel(
+            currentUserId: currentUserId,
+            currentUserName: currentUserName,
+            recipientUserId: recipientUserId
+        ))
+    }
+
     
     var body: some View {
         VStack {
@@ -47,26 +75,39 @@ struct LiveChatView: View {
             }
             
             // MARK: - Messages List 
-                        ScrollView {
-                            VStack(spacing: 12) {
-                                ForEach(viewModel.messages) { message in
-                                    HStack {
-                                        if message.isUser { Spacer() }
-                                        
-                                        Text(message.text)
-                                            .padding(12)
-                                            .background(message.isUser ? Color.darkblue : Color.gray.opacity(0.2))
-                                            .foregroundColor(message.isUser ? .white : .primary)
-                                            .cornerRadius(16)
-                                        
-                                        if !message.isUser { Spacer() }
-                                    }
+            ScrollView {
+                VStack(spacing: 12) {
+                    ForEach(viewModel.messages) { message in
+                        HStack {
+                            // Check if message is from current user
+                            if message.senderId == currentUserId {
+                                Spacer()
+                            }
+                            
+                            VStack(alignment: message.senderId == currentUserId ? .trailing : .leading, spacing: 4) {
+                                Text(message.text)
+                                    .padding(12)
+                                    .background(message.senderId == currentUserId ? Color.darkblue : Color.gray.opacity(0.2))
+                                    .foregroundColor(message.senderId == currentUserId ? .white : .primary)
+                                    .cornerRadius(16)
+                                
+                                // Show sender name if not current user
+                                if message.senderId != currentUserId {
+                                    Text(message.senderName)
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
                                 }
                             }
-                            .padding()
+                            
+                            if message.senderId != currentUserId {
+                                Spacer()
+                            }
                         }
-
-            Spacer()
+                    }
+                }
+                .padding()
+            }
+            
 
             // MARK: - Bottom Input Bar
             HStack {
@@ -108,5 +149,11 @@ struct LiveChatView: View {
 }
 
 #Preview {
-    LiveChatView()
+    LiveChatView(
+        currentUserId: "user123",
+        currentUserName: "Me",
+        recipientUserId: "user456",
+        recipientName: "John Doe",
+        recipientContact: "1234567890"
+    )
 }
