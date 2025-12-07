@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DeafHome: View {
     @EnvironmentObject private var appStateManager: AppStateManager
+    @EnvironmentObject private var authViewModel: AuthViewModel            // 👈 NEW
     @StateObject private var viewModel = TranslationViewModel()
     @Environment(\.layoutDirection) var layoutDirection
     @Binding var deafName: String
@@ -11,7 +12,7 @@ struct DeafHome: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HeaderView(deafName: $deafName)
+            HeaderView(deafName: $deafName)     // Header uses AuthViewModel via EnvironmentObject
 
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 16) {
@@ -41,6 +42,7 @@ struct DeafHome: View {
         }
         .padding(.horizontal, 16)
         .onAppear {
+            // Local UUID used for appointments, kept as is
             if deafUserId.isEmpty {
                 deafUserId = UUID().uuidString
                 print("Generated new user ID: \(deafUserId)")
@@ -50,6 +52,7 @@ struct DeafHome: View {
                 print("DeafHome appeared - already initialized")
                 return
             }
+
             if !deafName.isEmpty {
                 viewModel.setDeafUser(userId: deafUserId, name: deafName)
                 hasInitializedUser = true
@@ -71,8 +74,9 @@ struct DeafHome: View {
 // MARK: - Updated Header View
 struct HeaderView: View {
     @EnvironmentObject private var appStateManager: AppStateManager
+    @EnvironmentObject private var authViewModel: AuthViewModel      // 👈 NEW
     @Binding var deafName: String
-    @State private var showLogoutAlert = false
+    @State private var showDeleteAlert = false
 
     var body: some View {
         HStack {
@@ -93,16 +97,31 @@ struct HeaderView: View {
                 }
 
                 Button {
-                    showLogoutAlert = true
+                    showDeleteAlert = true
                 } label: {
                     Image(systemName: "iphone.and.arrow.right.outward")
                         .font(.system(size: 24))
                         .foregroundColor(.red)
                 }
-                .alert("Are you sure you want to sign out?", isPresented: $showLogoutAlert) {
+                .alert("Are you sure you want to delete your account?", isPresented: $showDeleteAlert) {
                     Button("Cancel", role: .cancel) {}
-                    Button("Sign Out", role: .destructive) {
-                        appStateManager.logout()
+
+                    Button("Delete Account", role: .destructive) {
+                        // 🔥 Delete from deafUsers via AuthViewModel
+                        authViewModel.deleteDeafAccount { result in
+                            switch result {
+                            case .success:
+                                print("✅ Deaf account deleted from deafUsers")
+                                // Optional: clear local name
+                                deafName = ""
+                                // Reset app flow
+                                appStateManager.logout()
+                            case .failure(let error):
+                                print("❌ Failed to delete deaf account: \(error.localizedDescription)")
+                                // You can still log out if you want the user to leave the screen
+                                appStateManager.logout()
+                            }
+                        }
                     }
                 }
             }
@@ -606,11 +625,20 @@ extension Color {
         let a, r, g, b: UInt64
         switch hex.count {
         case 3:
-            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+            (a, r, g, b) = (255,
+                            (int >> 8) * 17,
+                            (int >> 4 & 0xF) * 17,
+                            (int & 0xF) * 17)
         case 6:
-            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+            (a, r, g, b) = (255,
+                            int >> 16,
+                            int >> 8 & 0xFF,
+                            int & 0xFF)
         case 8:
-            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+            (a, r, g, b) = (int >> 24,
+                            int >> 16 & 0xFF,
+                            int >> 8 & 0xFF,
+                            int & 0xFF)
         default:
             (a, r, g, b) = (255, 255, 255, 255)
         }
@@ -619,7 +647,7 @@ extension Color {
             .sRGB,
             red: Double(r) / 255,
             green: Double(g) / 255,
-            blue: Double(b) / 255,
+            blue:  Double(b) / 255,
             opacity: Double(a) / 255)
     }
 }
@@ -629,5 +657,6 @@ extension Color {
     NavigationStack {
         DeafHome(deafName: .constant("User"))
             .environmentObject(AppStateManager())
+            .environmentObject(AuthViewModel())   // ✅ add this
     }
 }

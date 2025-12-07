@@ -12,6 +12,7 @@ class FirebaseService {
         print("🔥 FirebaseService initialized")
     }
     
+    // MARK: - Translators (users collection)
     func fetchTranslators(completion: @escaping (Result<[TranslatorData], Error>) -> Void) {
         print("🔍 Setting up translators listener...")
         
@@ -132,8 +133,13 @@ class FirebaseService {
             }
     }
     
-    // ✨ UPDATED: Only store translator ID
-    func createAppointment(deafUserId: String, deafName: String, translatorId: String, completion: @escaping (Result<String, Error>) -> Void) {
+    // MARK: - Appointments
+    func createAppointment(
+        deafUserId: String,
+        deafName: String,
+        translatorId: String,
+        completion: @escaping (Result<String, Error>) -> Void
+    ) {
         print("📝 Creating appointment request...")
         print("   Deaf User: \(deafName) (\(deafUserId))")
         print("   Translator ID: \(translatorId)")
@@ -141,7 +147,7 @@ class FirebaseService {
         let appointmentData: [String: Any] = [
             "deafUserId": deafUserId,
             "deafName": deafName,
-            "translatorId": translatorId,  // ✨ Only store ID
+            "translatorId": translatorId,
             "createdAt": FieldValue.serverTimestamp()
         ]
         
@@ -157,7 +163,10 @@ class FirebaseService {
         }
     }
     
-    func fetchUserAppointments(userId: String, completion: @escaping (Result<[AppointmentRequest], Error>) -> Void) {
+    func fetchUserAppointments(
+        userId: String,
+        completion: @escaping (Result<[AppointmentRequest], Error>) -> Void
+    ) {
         print("🔍 Setting up appointments listener for user: \(userId)")
         
         appointmentsListener?.remove()
@@ -196,7 +205,10 @@ class FirebaseService {
             }
     }
     
-    func deleteAppointment(appointmentId: String, completion: @escaping (Result<Void, Error>) -> Void) {
+    func deleteAppointment(
+        appointmentId: String,
+        completion: @escaping (Result<Void, Error>) -> Void
+    ) {
         print("🗑️ Deleting appointment: \(appointmentId)")
         
         db.collection("appointments").document(appointmentId).delete { error in
@@ -215,5 +227,24 @@ class FirebaseService {
         print("🧹 Removing all Firebase listeners")
         translatorsListener?.remove()
         appointmentsListener?.remove()
+    }
+    
+    // MARK: - Deaf users (ONLY this collection will be touched)
+    func deleteDeafUser(
+        userId: String,
+        completion: @escaping (Result<Void, Error>) -> Void
+    ) {
+        print("🗑️ Deleting deaf user from 'deafUsers': \(userId)")
+        
+        db.collection("deafUsers").document(userId).delete { error in
+            if let error = error {
+                print("❌ Error deleting deaf user: \(error.localizedDescription)")
+                completion(.failure(error))
+                return
+            }
+            
+            print("✅ Deaf user deleted from 'deafUsers'")
+            completion(.success(()))
+        }
     }
 }

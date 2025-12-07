@@ -5,7 +5,7 @@ import FirebaseFirestore
 
 final class AuthViewModel: ObservableObject {
     @Published var user: User?
-    @Published var userRole: String? // "interpreter" or "requester"
+    @Published var userRole: String?        // "interpreter" or "requester"
 
     private let db = Firestore.firestore()
     
@@ -34,6 +34,7 @@ final class AuthViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Save role (interpreter / requester)
     func saveRole(for choice: ChoiceType) {
         guard let uid = user?.uid else { return }
 
@@ -51,7 +52,7 @@ final class AuthViewModel: ObservableObject {
             self.userRole = role
         }
 
-        // Also save to Firestore
+        // Also save to Firestore (users collection)
         db.collection("users")
             .document(uid)
             .setData(["role": role], merge: true) { error in
@@ -61,6 +62,7 @@ final class AuthViewModel: ObservableObject {
             }
     }
 
+    // MARK: - Create deaf user profile (deafUsers collection)
     func createDeafUserProfile(name: String) {
         guard let uid = user?.uid else { return }
 
@@ -81,12 +83,40 @@ final class AuthViewModel: ObservableObject {
             }
     }
     
+    // MARK: - Delete deaf account ONLY from deafUsers
+    func deleteDeafAccount(completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let uid = user?.uid else {
+            print("❌ No Firebase user UID – cannot delete deaf account")
+            completion(.failure(NSError(domain: "AuthViewModel",
+                                        code: -1,
+                                        userInfo: [NSLocalizedDescriptionKey: "Missing user id"])))
+            return
+        }
+
+        db.collection("deafUsers")
+            .document(uid)
+            .delete { error in
+                if let error = error {
+                    print("❌ Failed to delete deaf user profile: \(error.localizedDescription)")
+                    completion(.failure(error))
+                    return
+                }
+
+                print("✅ Deaf user profile deleted from deafUsers")
+                // Optional: clear local role
+                self.clearRole()
+                completion(.success(()))
+            }
+    }
+    
+    // MARK: - Helpers
+    
     // Check if user has already made a choice
     func hasUserMadeChoice() -> Bool {
         return userRole != nil
     }
     
-    // Clear saved role (for logout)
+    // Clear saved role (for logout / delete)
     func clearRole() {
         UserDefaults.standard.removeObject(forKey: roleStorageKey)
         DispatchQueue.main.async {
