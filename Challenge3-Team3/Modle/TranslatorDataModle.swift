@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-// Updated TranslatorData with Firebase fields (English)
+// MARK: - TranslatorData (مُحسّن لدعم العرض بالعربية)
 struct TranslatorData: Identifiable {
     let id: String
     let name: String
@@ -11,17 +11,31 @@ struct TranslatorData: Identifiable {
     let price: String
     let category: String
     
-    // Computed property to determine state (volunteer or paid)
+    // خاصية محسوبة لتحديد الحالة: متطوع أو مدفوع 
     var state: String {
-        if category == "Volunteer" || price == "0" || price.isEmpty {
-            return "Volunteer"
+        let cat = category.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let p = price.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // تقبل القيم سواء بالإنجليزية أو بالعربية
+        let isVolunteerCategory = ["volunteer", "متطوع", "متطوعة", "تطوع"].contains { cat.contains($0) }
+        let isPaidCategory = ["paid", "مدفوع", "مدفوعة"].contains { cat.contains($0) }
+        
+        if isVolunteerCategory || p == "0" || p.isEmpty {
+            return "متطوع"
+        } else if isPaidCategory {
+            return "مدفوع"
         } else {
-            return "Paid"
+            // احتياطي: إذا السعر صفر أو فارغ اعتبر متطوع، وإلا اعتبر مدفوع
+            if p == "0" || p.isEmpty {
+                return "متطوع"
+            } else {
+                return "مدفوع"
+            }
         }
     }
 }
 
-// Keep these for other parts of your app — translated to English
+// MARK: - Translator model (عرضي مُعروض بالعربية)
 struct Translator: Identifiable {
     let id = UUID()
     let name: String
@@ -33,18 +47,32 @@ struct Translator: Identifiable {
     var isAvailable: Bool
 }
 
+// MARK: - Translator level (قيم معروضة بالعربية)
 enum TranslatorLevel: String {
-    case beginner = "Beginner"
-    case intermediate = "Intermediate"
-    case advanced = "Advanced"
+    case beginner = "مبتدئ"
+    case intermediate = "متوسط"
+    case advanced = "متقدم"
+    
+    // نص العرض (يمكن استخدام rawValue)
+    var display: String { rawValue }
 }
 
+// MARK: - حالة الموعد (مع نص عربي للعرض)
 enum AppointmentStatus {
     case pending
     case completed
     case paid
+    
+    var display: String {
+        switch self {
+        case .pending: return "قيد الانتظار"
+        case .completed: return "مكتمل"
+        case .paid: return "مدفوع"
+        }
+    }
 }
 
+// MARK: - Appointment model
 struct Appointment: Identifiable {
     let id = UUID()
     let translator: Translator

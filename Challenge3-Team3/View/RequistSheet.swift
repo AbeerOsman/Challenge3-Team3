@@ -10,6 +10,8 @@ struct RequistSheet: View {
     var body: some View {
         VStack(spacing: 20) {
             HStack {
+                Color.clear.frame(width: 20, height: 20)
+                Spacer()
                 Button {
                     dismiss()
                 } label: {
@@ -17,8 +19,6 @@ struct RequistSheet: View {
                         .font(.system(size: 20))
                         .foregroundColor(.gray)
                 }
-                Spacer()
-                Color.clear.frame(width: 20, height: 20)
             }
             .padding(.horizontal, 24)
             .padding(.top, 20)
@@ -46,42 +46,46 @@ struct RequistSheet: View {
                     .foregroundColor(Color(hex: "1A1A1A"))
                 
                 HStack(spacing: 12) {
-                    TagView(text: translator.gender, icon: "person.fill")
+                    TagView(text: translator.gender == "Female" ? "أنثى" : "ذكر", icon: "person.fill")
                     TagView(text: translator.age, icon: "calendar")
                     TagView(text: translator.level, icon: "star.fill")
                 }
                 
                 HStack(spacing: 8) {
-                    Text(translator.price)
-                        .font(.system(size: 32, weight: .bold))
-                        .foregroundColor(Color(hex: "0D189F"))
+                    Text("/ الساعة")
+                        .font(.system(size: 18))
+                        .foregroundColor(.gray)
                     
                     Image(.ريال)
                         .resizable()
                         .scaledToFit()
                         .frame(width: 26, height: 26)
                     
-                    Text("/ Hour")
-                        .font(.system(size: 18))
-                        .foregroundColor(.gray)
+                    Text(translator.price)
+                        .font(.system(size: 32, weight: .bold))
+                        .foregroundColor(Color(hex: "0D189F"))
                 }
             }
             .padding(.vertical, 20)
             
             VStack(spacing: 12) {
 
-                Text("Are you sure you want to send the request to the interpreter?")
+                Text("هل تريد بالتأكيد إرسال طلب تواصل إلى المترجم؟")
                     .font(.system(size: 20, weight: .bold))
                     .multilineTextAlignment(.center)
                     .foregroundColor(.black)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
 
-                Text("Once your request is sent, the interpreter will respond to you.")
+                Text("بمجرد إرسال طلبك، ستفتح محادثة تلقائية بينك ومترجم.")
                     .font(.subheadline)
                     .multilineTextAlignment(.center)
                     .foregroundColor(.black)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
 
             }
-            .padding(.horizontal, 36)   // clean consistent padding
+            .padding(.horizontal, 36)
             .padding(.top, 6)
             
             Spacer()
@@ -92,7 +96,7 @@ struct RequistSheet: View {
                         .foregroundColor(.green)
                         .font(.system(size: 24))
                     
-                    Text("Request sent successfully!")
+                    Text("تم إرسال الطلب بنجاح!")
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.green)
                 }
@@ -124,7 +128,7 @@ struct RequistSheet: View {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                     } else {
-                        Text("Confirm Request")
+                        Text("تأكيد طلب التواصل")
                             .font(.system(size: 18, weight: .semibold))
                     }
                 }
@@ -150,7 +154,7 @@ struct RequistSheet: View {
             Color(hex: "DDE8FD")
                 .ignoresSafeArea(edges: .bottom)
         )
-        .environment(\.layoutDirection, .leftToRight)
+        .environment(\.layoutDirection, .rightToLeft)
     }
     
     private func submitRequest() {

@@ -17,20 +17,19 @@ struct AllTranslatorsView: View {
                            startPoint: .topLeading, endPoint: .bottomTrailing)
                 .ignoresSafeArea()
             
-            VStack(alignment: .leading) {
+            VStack(alignment: .trailing) {
                 LevelFilterView(viewModel: viewModel)
                     .padding(.horizontal, 20)
                     .padding(.top, 48)
                 
                 ScrollView(.vertical) {
                     TranslatorCardsView(viewModel: viewModel)
-                      
                 }
             }
         }
         .background(Color(hex: "F2F2F2"))
-        .environment(\.layoutDirection, .leftToRight)
-        .navigationTitle("Available Translators")
+        .environment(\.layoutDirection, .rightToLeft) // RTL
+        .navigationTitle("المترجمون المتاحون")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             print("  AllTranslatorsView appeared")
@@ -49,7 +48,7 @@ struct TranslatorCardsView: View {
     var body: some View {
         VStack{
             if viewModel.isLoading {
-                ProgressView("Loading...")
+                ProgressView("جاري التحميل...")
                     .frame(maxWidth: .infinity)
                     .padding(.top, 100)
             } else if let error = viewModel.errorMessage {
@@ -58,14 +57,16 @@ struct TranslatorCardsView: View {
                         .font(.system(size: 50))
                         .foregroundColor(.orange)
                     
-                    Text("Error loading data")
+                    Text("حدث خطأ أثناء تحميل البيانات")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(.black)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                        .multilineTextAlignment(.trailing)
                     
                     Text(error)
                         .font(.system(size: 14))
                         .foregroundColor(.gray)
-                        .multilineTextAlignment(.center)
+                        .multilineTextAlignment(.trailing)
                         .padding(.horizontal, 40)
                     
                     Button {
@@ -77,7 +78,7 @@ struct TranslatorCardsView: View {
                     } label: {
                         HStack {
                             Image(systemName: "arrow.clockwise")
-                            Text("Try Again")
+                            Text("حاول مرة أخرى")
                         }
                         .foregroundColor(.white)
                         .font(.system(size: 16, weight: .semibold))
@@ -100,19 +101,23 @@ struct TranslatorCardsView: View {
                         .font(.system(size: 60))
                         .foregroundColor(Color(hex: "D8D8D8"))
                     
-                    Text("No translators available")
+                    Text("لا يوجد مترجمون متاحون")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(.gray)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                        .multilineTextAlignment(.trailing)
                     
                     if viewModel.selectedLevel != nil {
-                        Text("No results for this level")
+                        Text("لا توجد نتائج لهذا المستوى")
                             .font(.system(size: 14))
                             .foregroundColor(.gray)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                            .multilineTextAlignment(.trailing)
                         
                         Button {
                             viewModel.clearFilter()
                         } label: {
-                            Text("Show all translators")
+                            Text("عرض جميع المترجمين")
                                 .foregroundColor(Color(hex: "0D189F"))
                                 .font(.system(size: 16, weight: .semibold))
                                 .padding(.top, 8)
@@ -137,14 +142,16 @@ struct LevelFilterView: View {
     @ObservedObject var viewModel: TranslationViewModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Select Level")
+        VStack(alignment: .trailing, spacing: 12) {
+            Text("اختر المستوى")
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.black)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .multilineTextAlignment(.leading)
 
             HStack(spacing: 8) {
                 FilterButton(
-                    title: "Beginner",
+                    title: "مبتدئ",
                     isSelected: viewModel.selectedLevel == .beginner
                 ) {
                     if viewModel.selectedLevel == .beginner {
@@ -155,7 +162,7 @@ struct LevelFilterView: View {
                 }
 
                 FilterButton(
-                    title: "Intermediate",
+                    title: "متوسط",
                     isSelected: viewModel.selectedLevel == .intermediate
                 ) {
                     if viewModel.selectedLevel == .intermediate {
@@ -166,7 +173,7 @@ struct LevelFilterView: View {
                 }
 
                 FilterButton(
-                    title: "Advanced",
+                    title: "متقدم",
                     isSelected: viewModel.selectedLevel == .advanced
                 ) {
                     if viewModel.selectedLevel == .advanced {
@@ -176,6 +183,7 @@ struct LevelFilterView: View {
                     }
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }
@@ -205,8 +213,9 @@ struct FilterButton: View {
 
 
 #Preview {
-    NavigationView {
+    NavigationStack {
         AllTranslatorsView(viewModel: TranslationViewModel())
             .environmentObject(TranslationViewModel())
+            .environment(\.layoutDirection, .rightToLeft)
     }
 }
