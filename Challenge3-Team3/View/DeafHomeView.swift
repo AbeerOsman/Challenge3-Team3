@@ -723,27 +723,32 @@ struct DeafHome: View {
                     )
 
                 ScrollView(.vertical, showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Available Translators")
+                    VStack(alignment: .trailing, spacing: 16) {
+                        Text("المترجمون المتاحون")
                             .font(.system(size: 20, weight: .bold))
                             .foregroundColor(Color(hex: "0B1A66"))
-                            .padding(.top, 18)
+                            .padding(.top, 32)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .multilineTextAlignment(.trailing)
 
                         TranslatorCardsScrollView(viewModel: viewModel)
 
-                        Text("Appointment Requests")
+                        Text("طلبات التواصل")
                             .font(.system(size: 20, weight: .bold))
                             .foregroundColor(Color(hex: "0B1A66"))
                             .padding(.top, 8)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .multilineTextAlignment(.trailing)
 
                         if !viewModel.appointmentsWithTranslators.isEmpty {
                             MyRequestsView(viewModel: viewModel)
                                 .padding(.bottom, 40)
                         } else {
-                            Text("No appointment requests sent yet")
+                            Text("لا توجد طلبات تواصل بعد")
                                 .foregroundColor(.gray)
                                 .padding(.vertical, 12)
                                 .frame(maxWidth: .infinity, alignment: .center)
+                                .multilineTextAlignment(.center)
                         }
                     }
                     .padding(.horizontal, 16)
@@ -759,17 +764,15 @@ struct DeafHome: View {
                     Button {
                         isHelp = true
                     } label: {
+                        
                         RoundedRectangle(cornerRadius: 16)
                             .fill(LinearGradient(gradient: Gradient(colors: [Color(hex: "0D189F"), Color(hex: "0A1280")]), startPoint: .topLeading, endPoint: .bottomTrailing))
                             .frame(width: 64, height: 64)
                             .shadow(color: Color(hex: "0D189F").opacity(0.22), radius: 14, x: 0, y: 8)
                             .overlay(
                                 VStack(spacing: 0) {
-                                    Image(systemName: "hand.raised.fill")
+                                    Image(systemName: "info.circle")
                                         .font(.system(size: 24))
-                                        .foregroundColor(.white)
-                                    Text("Help")
-                                        .font(.system(size: 10, weight: .semibold))
                                         .foregroundColor(.white)
                                 }
                             )
@@ -807,7 +810,7 @@ struct DeafHome: View {
             hasInitializedUser = true
         }
         .navigationBarBackButtonHidden(true)
-        .environment(\.layoutDirection, .leftToRight)
+        .environment(\.layoutDirection, .rightToLeft) // تم التغيير إلى RTL
     }
 }
 
@@ -823,15 +826,12 @@ struct HeaderView: View {
     @State private var pulse = false
 
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Welcome,")
-                    .font(.system(size: 14, weight: .regular))
+        HStack{
+            HStack{
+                Text("مرحبًا،")
+                    .font(.system(size: 19, weight: .regular))
                     .foregroundColor(Color(hex: "666666"))
 
-                Text(deafName.isEmpty ? "Our User" : deafName)
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(Color(hex: "0B1A66"))
             }
 
             Spacer()
@@ -859,10 +859,10 @@ struct HeaderView: View {
                         .font(.system(size: 24))
                         .foregroundColor(.red)
                 }
-                .alert("Are you sure you want to delete your account?", isPresented: $showDeleteAlert) {
-                    Button("Cancel", role: .cancel) {}
+                .alert("هل أنت متأكد أنك تريد حذف حسابك؟", isPresented: $showDeleteAlert) {
+                    Button("إلغاء", role: .cancel) {}
 
-                    Button("Delete Account", role: .destructive) {
+                    Button("حذف الحساب", role: .destructive) {
                         // 🔥 Step 1: Delete all appointments first
                         print("🗑️ Starting cascade deletion for user: \(deafUserId)")
                         FirebaseService.shared.deleteAllUserAppointments(userId: deafUserId) { result in
@@ -903,8 +903,15 @@ struct HeaderView: View {
                 }
             }
         }
-        .padding(.vertical, 8)
+        //.padding(.vertical, 8)
         .padding(.top, 32)
+        
+        HStack{
+            Text(deafName.isEmpty ? "المستخدم" : deafName)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(Color(hex: "0B1A66"))
+            Spacer()
+        }
     }
 }
 
@@ -965,19 +972,19 @@ struct TranslatorCardsScrollView: View {
                     .padding(.vertical, 6)
             } else if let error = viewModel.errorMessage {
                 VStack(spacing: 8) {
-                    Text("Error loading data")
+                    Text("حدث خطأ أثناء تحميل البيانات")
                         .foregroundColor(.red)
                     Text(error)
                         .font(.caption)
                         .foregroundColor(.gray)
-                    Button("Try Again") {
+                    Button("حاول مرة أخرى") {
                         viewModel.fetchTranslators()
                     }
                     .padding(.top, 8)
                 }
                 .frame(height: 180)
             } else if viewModel.limitedTranslators.isEmpty {
-                Text("No translators available")
+                Text("لا يوجد مترجمون متاحون")
                     .foregroundColor(.gray)
                     .frame(height: 180)
             } else {
@@ -1053,7 +1060,7 @@ struct AppointmentCard: View {
                                 .fill(translator.category == "متطوع" ? Color(hex: "5CB853") : Color(hex: "EBA0A0"))
                                 .frame(width: 6, height: 6)
                             
-                            Text(translator.category == "متطوع" ? "Volunteer" : "Paid")
+                            Text(translator.category == "متطوع" ? "متطوع" : "مدفوع")
                                 .font(.system(size: 13, weight: .medium))
                                 .foregroundColor(translator.category == "متطوع" ? Color(hex: "5CB853") : Color(hex: "EBA0A0"))
                         }
@@ -1095,7 +1102,7 @@ struct AppointmentCard: View {
                             .frame(width: 22, height: 22)
                     }
                     
-                    Text("Per Hour")
+                    Text("لكل ساعة")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(Color(hex: "9E9E9E"))
                 }
@@ -1110,7 +1117,7 @@ struct AppointmentCard: View {
                 } label: {
                     HStack {
                         Image(systemName: "xmark.circle.fill")
-                        Text("Cancel")
+                        Text("إلغاء")
                     }
                     .foregroundColor(.white)
                     .font(.system(size: 14, weight: .semibold))
@@ -1159,7 +1166,7 @@ struct DeletedTranslatorCard: View {
     
     var body: some View {
         HStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .trailing, spacing: 12) {
                 HStack(spacing: 12) {
                     Image(systemName: "person.fill.xmark")
                         .resizable()
@@ -1167,12 +1174,12 @@ struct DeletedTranslatorCard: View {
                         .frame(width: 48, height: 48)
                         .foregroundColor(.gray)
                     
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Translator Unavailable")
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Text("المترجم غير متاح")
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(Color(hex: "1A1A1A"))
                         
-                        Text("This translator is no longer available")
+                        Text("هذا المترجم لم يعد متاحًا")
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(.gray)
                     }
@@ -1191,7 +1198,7 @@ struct DeletedTranslatorCard: View {
                 } label: {
                     HStack {
                         Image(systemName: "trash.fill")
-                        Text("Remove")
+                        Text("إزالة")
                     }
                     .foregroundColor(.white)
                     .font(.system(size: 14, weight: .semibold))
@@ -1260,7 +1267,7 @@ struct TranslatorCard: View {
                                 .fill(translator.state == "متطوع" ? Color(hex: "5CB853") : Color(hex: "EBA0A0"))
                                 .frame(width: 6, height: 6)
                             
-                            Text(translator.state == "متطوع" ? "Volunteer" : "Paid")
+                            Text(translator.state == "متطوع" ? "متطوع" : "مدفوع")
                                 .font(.system(size: 13, weight: .medium))
                                 .foregroundColor(translator.state == "متطوع" ? Color(hex: "5CB853") : Color(hex: "EBA0A0"))
                         }
@@ -1302,7 +1309,7 @@ struct TranslatorCard: View {
                             .frame(width: 22, height: 22)
                     }
                     
-                    Text("Per Hour")
+                    Text("لكل ساعة")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(Color(hex: "9E9E9E"))
                 }
@@ -1316,7 +1323,7 @@ struct TranslatorCard: View {
                         }
                     } label: {
                         HStack {
-                            Text("Contact")
+                            Text("تواصل")
                                 .foregroundColor(.white)
                                 .font(.system(size: 14, weight: .semibold))
                         }
@@ -1331,8 +1338,8 @@ struct TranslatorCard: View {
                         .cornerRadius(14)
                         .shadow(color: Color(hex: "0D189F").opacity(0.3), radius: 8, x: 0, y: 4)
                     }
-                    .alert("You already requested this translator!", isPresented: $showDuplicateAlert) {
-                        Button("OK", role: .cancel) {}
+                    .alert("لقد قمت بطلب هذا المترجم بالفعل!", isPresented: $showDuplicateAlert) {
+                        Button("موافق", role: .cancel) {}
                     }
                 }
                 .sheet(isPresented: $showRequistSheet) {
@@ -1404,11 +1411,11 @@ struct SeeAllCard: View {
             AllTranslatorsView(viewModel: viewModel)
         } label: {
             HStack(spacing: 16) {
-                Text("See All")
+                Text("عرض الكل")
                     .font(.system(size: 22, weight: .bold))
                     .foregroundColor(Color(hex: "1A1A1A"))
                 
-                Image(systemName: "arrow.right")
+                Image(systemName: "arrow.left") // mirrored for RTL
                     .font(.system(size: 40, weight: .semibold))
                     .foregroundColor(Color(hex: "0D189F"))
             }
@@ -1467,7 +1474,7 @@ extension Color {
 // MARK: - Preview
 #Preview {
     NavigationStack {
-        DeafHome(deafName: .constant("User"))
+        DeafHome(deafName: .constant("مستخدمنا العزيز"))
             .environmentObject(AppStateManager())
             .environmentObject(AuthViewModel())
     }
