@@ -223,6 +223,60 @@ class FirebaseService {
         }
     }
     
+    // MARK: - Cascade Delete User Appointments
+    func deleteAllUserAppointments(
+        userId: String,
+        completion: @escaping (Result<Void, Error>) -> Void
+    ) {
+        print("🗑️ Deleting all appointments for user: \(userId)")
+        
+        // First, fetch all appointments for this user
+        db.collection("appointments")
+            .whereField("deafUserId", isEqualTo: userId)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("❌ Error fetching appointments for deletion: \(error.localizedDescription)")
+                    completion(.failure(error))
+                    return
+                }
+                
+                guard let documents = snapshot?.documents else {
+                    print("⚠️ No appointments found for user: \(userId)")
+                    completion(.success(()))
+                    return
+                }
+                
+                print("📦 Found \(documents.count) appointments to delete for user: \(userId)")
+                
+                // If no appointments, return success
+                if documents.isEmpty {
+                    print("✅ No appointments to delete")
+                    completion(.success(()))
+                    return
+                }
+                
+                // Delete all appointments in batch
+                let batch = self.db.batch()
+                
+                for document in documents {
+                    batch.deleteDocument(document.reference)
+                    print("   ➕ Marked appointment for deletion: \(document.documentID)")
+                }
+                
+                // Commit the batch
+                batch.commit { error in
+                    if let error = error {
+                        print("❌ Error batch deleting appointments: \(error.localizedDescription)")
+                        completion(.failure(error))
+                        return
+                    }
+                    
+                    print("✅ Successfully deleted \(documents.count) appointments for user: \(userId)")
+                    completion(.success(()))
+                }
+            }
+    }
+    
     func removeAllListeners() {
         print("🧹 Removing all Firebase listeners")
         translatorsListener?.remove()
