@@ -31,6 +31,7 @@ struct DeafNameSheet: View {
                 TextField("Your name", text: $deafName)
                     .textInputAutocapitalization(.words)
                     .autocorrectionDisabled()
+                    .accentColor(.darkblue)
                     .padding(.horizontal, 14)
                     .frame(height: 48)
                     .background(

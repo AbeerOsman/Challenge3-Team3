@@ -85,7 +85,14 @@ struct HeaderView: View {
             Spacer()
             HStack (spacing: 13) {
                 NavigationLink {
-                    MessagesView()
+//                    MessagesView()
+                    LiveChatView(
+                        currentUserId: "user123",
+                        currentUserName: "Me",
+                        recipientUserId: "user456",
+                        recipientName: "John Doe",
+                        recipientContact: "+966501234567"
+                    )
                 } label: {
                     Image(systemName: "bubble.left.and.text.bubble.right")
                         .font(.system(size: 24))
