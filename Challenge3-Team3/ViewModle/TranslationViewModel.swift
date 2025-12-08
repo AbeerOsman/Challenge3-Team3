@@ -17,19 +17,19 @@ class TranslationViewModel: ObservableObject {
     var deafName: String = ""
     
     init() {
-        print("🎬 TranslationViewModel initialized")
+        print(" TranslationViewModel initialized")
         fetchTranslators()
     }
     
     func setDeafUser(userId: String, name: String) {
-        print("👤 Setting deaf user: \(name) (ID: \(userId))")
+        print(" Setting deaf user: \(name) (ID: \(userId))")
         self.deafUserId = userId
         self.deafName = name
         fetchUserAppointments()
     }
     
     func fetchTranslators() {
-        print("🚀 fetchTranslators() called")
+        print(" fetchTranslators() called")
         isLoading = true
         errorMessage = nil
 

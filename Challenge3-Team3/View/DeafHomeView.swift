@@ -692,13 +692,12 @@ import SwiftUI
 
 struct DeafHome: View {
     @EnvironmentObject private var appStateManager: AppStateManager
-    @EnvironmentObject private var authViewModel: AuthViewModel            // 👈 NEW
+    @EnvironmentObject private var authViewModel: AuthViewModel        
     @StateObject private var viewModel = TranslationViewModel()
     @Environment(\.layoutDirection) var layoutDirection
     @Binding var deafName: String
     @State private var hasInitializedUser = false
     @State private var isHelp: Bool = false
-
     @AppStorage("deafUserId") private var deafUserId: String = ""
     
     // UI only
