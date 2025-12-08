@@ -1316,10 +1316,39 @@ struct TranslatorCard: View {
                         .foregroundColor(Color(hex: "9E9E9E"))
                 }
                 
-                Text("Tap card to request")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(Color(hex: "9E9E9E"))
-            }
+                VStack {
+                    Button {
+                        if viewModel.appointments.contains(where: { $0.translatorId == translator.id }) {
+                            showDuplicateAlert = true
+                        } else {
+                            showRequistSheet = true
+                        }
+                    } label: {
+                        HStack {
+                            Text("تواصل")
+                                .foregroundColor(.white)
+                                .font(.system(size: 14, weight: .semibold))
+                        }
+                        .frame(width: 110, height: 42)
+                        .background(
+                            LinearGradient(
+                                colors: [Color(hex: "0D189F"), Color(hex: "0A1280")],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .cornerRadius(14)
+                        .shadow(color: Color(hex: "0D189F").opacity(0.3), radius: 8, x: 0, y: 4)
+                    }
+                    .alert("لقد قمت بطلب هذا المترجم بالفعل!", isPresented: $showDuplicateAlert) {
+                        Button("موافق", role: .cancel) {}
+                    }
+                }
+                .sheet(isPresented: $showRequistSheet) {
+                    RequistSheet(translator: translator, viewModel: viewModel)
+                        .presentationDetents([.medium, .large])
+                        .presentationDragIndicator(.hidden)
+                }
             .frame(minWidth: 120, alignment: .trailing)
             .padding(.trailing, CardSpacing.horizontalPadding)
             .padding(.leading, CardSpacing.horizontalPadding / 2)
