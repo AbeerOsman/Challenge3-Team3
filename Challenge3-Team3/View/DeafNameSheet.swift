@@ -16,19 +16,19 @@ struct DeafNameSheet: View {
                 .frame(width: 40, height: 5)
                 .padding(.top, 8)
 
-            Text("Enter your name")
+            Text("أدخل اسمك")
                 .font(.system(size: 22, weight: .bold))
                 .foregroundColor(.primary)
                 .padding(.top, 8)
 
-            Text("We'll use this to personalize your experience and let translators know who is requesting help.")
+            Text("سنستخدم هذا لتخصيص تجربتك وإخبار المترجمين من يطلب المساعدة.")
                 .font(.system(size: 14))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
 
             VStack(alignment: .leading, spacing: 8) {
-                TextField("Your name", text: $deafName)
+                TextField("اسمك", text: $deafName)
                     .textInputAutocapitalization(.words)
                     .autocorrectionDisabled()
                     .accentColor(.darkblue)
@@ -39,6 +39,7 @@ struct DeafNameSheet: View {
                             .fill(Color(.systemBackground))
                             .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
                     )
+                    .environment(\.layoutDirection, .rightToLeft)
             }
             .padding(.horizontal)
 
@@ -50,7 +51,7 @@ struct DeafNameSheet: View {
             }
 
             Button(action: continueTapped) {
-                Text("Continue")
+                Text("متابعة")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
@@ -70,7 +71,7 @@ struct DeafNameSheet: View {
             Button(role: .cancel) {
                 isPresented = false
             } label: {
-                Text("Cancel")
+                Text("إلغاء")
                     .font(.system(size: 15, weight: .regular))
                     .foregroundColor(.secondary)
             }
@@ -79,12 +80,13 @@ struct DeafNameSheet: View {
             Spacer(minLength: 12)
         }
         .padding(.bottom, 16)
+        .environment(\.layoutDirection, .rightToLeft)
     }
 
     private func continueTapped() {
         let trimmed = deafName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
-            validationMessage = "Please enter your name."
+            validationMessage = "يرجى إدخال اسمك."
             return
         }
 
@@ -118,7 +120,7 @@ private struct StatefulPreview: View {
             isPresented: $show,
             deafName: $name,
             onSave: {
-                print("Name saved and AppStateManager updated")
+                print("تم حفظ الاسم وتحديث AppStateManager")
             }
         )
     }

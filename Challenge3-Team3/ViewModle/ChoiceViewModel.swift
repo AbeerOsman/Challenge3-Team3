@@ -12,11 +12,11 @@ final class ChoiceViewModel: ObservableObject {
 
     let options: [ChoiceOption] = [
         ChoiceOption(
-            title: "I want to offer\nsupport",
+            title: "أرغب في تقديم الدعم",
             type: .offerSupport
         ),
         ChoiceOption(
-            title: "I need a sign\nlanguage interpreter",
+            title: "أحتاج إلى مترجم لغة الإشارة",
             type: .needInterpreter
         )
     ]

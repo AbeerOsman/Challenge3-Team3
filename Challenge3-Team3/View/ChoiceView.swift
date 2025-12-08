@@ -19,15 +19,16 @@ struct ChoiceView: View {
                     Spacer(minLength: 28)
 
                     VStack(spacing: 8) {
-                        Text("Community Connect")
-                            .font(.system(size: 28, weight: .semibold))
-                            .foregroundColor(.primary)
+                        Text("يُمْنَاك")
+                            .font(.system(size: 35, weight: .semibold))
+                            .foregroundColor(Color(hex: "0D189F"))
+                            .frame(maxWidth: .infinity, alignment: .center)
 
-                        Text("where signs are understood and heard.")
-                            .font(.system(size: 15))
+                        Text("حيث تُفهم الإشارات ويُسمع صوتها")
+                            .font(.system(size: 18))
                             .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
                     }
-                    .multilineTextAlignment(.center)
                     .padding(.horizontal, 28)
 
                     VStack(spacing: 18) {
@@ -35,7 +36,7 @@ struct ChoiceView: View {
                         LazyVGrid(columns: cols, spacing: 16) {
                             ForEach(choiceViewModel.options) { option in
                                 
-                                // Deaf user
+                                // المستخدم الأصم
                                 if option.type == .needInterpreter {
                                     Button(action: {
                                         choiceViewModel.handleTap(on: option)
@@ -44,15 +45,15 @@ struct ChoiceView: View {
                                     }) {
                                         CardContent(
                                             title: option.title,
-                                            subtitle: "Request a live interpreter",
+                                            subtitle: "اطلب مترجم إشارة مباشر",
                                             systemName: "ear.fill",
                                             accent: .indigo
                                         )
                                     }
                                     .buttonStyle(CardButtonStyle())
-                                    .accessibilityLabel("\(option.title). Request a live interpreter.")
+                                    .accessibilityLabel("\(option.title). اطلب مترجم مباشر.")
                                 
-                                // Interpreter
+                                // المترجم
                                 } else {
                                     NavigationLink(
                                         destination:
@@ -62,7 +63,7 @@ struct ChoiceView: View {
                                     ) {
                                         CardContent(
                                             title: option.title,
-                                            subtitle: "Join as an interpreter",
+                                            subtitle: "انضم كمترجم لغة الإشارة",
                                             systemName: "person.2.fill",
                                             accent: .teal
                                         )
@@ -73,7 +74,7 @@ struct ChoiceView: View {
                                         appStateManager.setUserRole("interpreter")
                                     })
                                     .buttonStyle(PlainButtonStyle())
-                                    .accessibilityLabel("\(option.title). Join as an interpreter.")
+                                    .accessibilityLabel("\(option.title). انضم كمترجم.")
                                 }
                             }
                         }
@@ -105,6 +106,7 @@ struct ChoiceView: View {
                 .presentationDragIndicator(.hidden)
             }
         }
+        .environment(\.layoutDirection, .rightToLeft) // جعل الواجهة من اليمين لليسار
     }
 }
 
@@ -117,6 +119,7 @@ struct CardContent: View {
 
     var body: some View {
         HStack(spacing: 14) {
+            
             RoundedRectangle(cornerRadius: 10)
                 .fill(accent.opacity(0.15))
                 .frame(width: 72, height: 72)
@@ -126,19 +129,23 @@ struct CardContent: View {
                         .foregroundColor(accent)
                 )
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .center, spacing: 6) {
                 Text(title)
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundColor(.primary)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .center)
 
                 Text(subtitle)
                     .font(.system(size: 13))
                     .foregroundColor(.secondary)
+                    .multilineTextAlignment(.leading)
             }
 
             Spacer()
 
-            Image(systemName: "chevron.right")
+            // سهم التنقل يعكس اتجاهه في RTL
+            Image(systemName: "chevron.left")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(Color(.tertiaryLabel))
         }
@@ -166,6 +173,7 @@ struct ChoiceView_Previews: PreviewProvider {
     static var previews: some View {
         ChoiceView()
             .environmentObject(AppStateManager())
-            .environmentObject(AuthViewModel()) // ← Added for preview
+            .environmentObject(AuthViewModel())
+            .environment(\.layoutDirection, .rightToLeft)
     }
 }

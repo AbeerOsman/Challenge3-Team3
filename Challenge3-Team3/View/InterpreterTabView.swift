@@ -15,18 +15,20 @@ struct InterpreterTabView: View {
             TranslatorProfileView()
                 .tabItem {
                     Image(systemName: "person.crop.circle")
-                    Text("Profile")
+                    Text("الملف الشخصي")
                 }
 
             // Messages Tab
             MessagesView()
                 .tabItem {
                     Image(systemName: "bubble.left.and.bubble.right")
-                    Text("Messages")
+                    Text("الرسائل")
                 }
 
           
-        }.tint(Color("darkblue"))
+        }
+        .tint(Color("darkblue"))
+        .environment(\.layoutDirection, .rightToLeft)
     }
 }
 
