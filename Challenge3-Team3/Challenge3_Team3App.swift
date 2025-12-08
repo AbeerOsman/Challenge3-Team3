@@ -23,7 +23,6 @@ struct Challenge3_Team3App: App {
 
 //                .environmentObject(translationViewModel) // ✨ Share with all views
             AppContainer()
-            AppContainer()
                 .environmentObject(translationViewModel)
                 .environmentObject(authViewModel)                 // ✅ inject into environment
         }

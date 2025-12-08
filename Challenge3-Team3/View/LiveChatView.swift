@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AuthenticationServices
 
 struct LiveChatView: View {
     
@@ -31,7 +32,6 @@ struct LiveChatView: View {
         self.recipientName = recipientName
         self.recipientContact = recipientContact
         
-        // Initialize ViewModel with ALL parameters including FaceTime info
         _viewModel = StateObject(wrappedValue: LiveChatViewModel(
             currentUserId: currentUserId,
             currentUserName: currentUserName,
@@ -43,14 +43,21 @@ struct LiveChatView: View {
 
     var body: some View {
         VStack {
-            // MARK: - Top Bar
-            topBar
-            
-            // MARK: - Messages List
             messagesList
-            
-            // MARK: - Bottom Input Bar
             bottomInputBar
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                HStack {
+                    Text(recipientName)
+                        .font(.system(size: 16))
+                    
+                    Image(systemName: "person.crop.circle.fill")
+                        .foregroundColor(.primary1)
+                        .font(.system(size: 30))
+                }
+            }
         }
         .padding(20)
         .confirmationDialog(
@@ -70,38 +77,45 @@ struct LiveChatView: View {
         } message: {
             Text(viewModel.alertMessage)
         }
-    }
-    
-    // MARK: - Top Bar Component
-    private var topBar: some View {
-        ZStack {
-            Rectangle()
-                .fill(Color.white.opacity(0.1))
-                .frame(height: 60)
+        
+        // MARK: - Apple Login Sheet
+        .sheet(isPresented: $viewModel.showAppleLoginSheet) {
+            VStack(spacing: 20) {
 
-            HStack {
-                Button(action: {
-                    dismiss()
-                }) {
-                    HStack {
-                        Image(systemName: "chevron.backward")
-                            .font(.system(size: 20))
-                        Text("Back")
+                Text("Use FaceTime?")
+                    .font(.title2)
+                    .bold()
+                    .padding(.top, 30)
+
+                Text("Sign in with your Apple ID to start a FaceTime video call.")
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+
+                SignInWithAppleButton(.signIn, onRequest: { request in
+                    request.requestedScopes = [.email, .fullName]
+                }, onCompletion: { result in
+                    switch result {
+                    case .success(_):
+                        viewModel.showAppleLoginSheet = false
+                        viewModel.requestFaceTimeCall()
+                    case .failure(let error):
+                        print("Apple sign in failed:", error.localizedDescription)
                     }
-                    .foregroundColor(.darkblue)
+                })
+                .signInWithAppleButtonStyle(.black)
+                .frame(height: 50)
+                .cornerRadius(10)
+                .padding(.horizontal, 40)
+
+                Button("Not Now") {
+                    viewModel.showAppleLoginSheet = false
                 }
+                .padding(.bottom, 30)
 
                 Spacer()
-                
-                Text(recipientName)
-                    .font(.system(size: 16))
-                
-                Image(systemName: "person.crop.circle.fill")
-                    .foregroundColor(.primary1)
-                    .font(.system(size: 30))
-                    .padding(.leading, 16)
             }
-            .padding(.horizontal)
+            .presentationDetents([.height(350)])
         }
     }
     
@@ -111,19 +125,20 @@ struct LiveChatView: View {
             VStack(spacing: 12) {
                 ForEach(viewModel.messages) { message in
                     HStack {
-                        // Check if message is from current user
                         if message.senderId == currentUserId {
                             Spacer()
                         }
                         
-                        VStack(alignment: message.senderId == currentUserId ? .trailing : .leading, spacing: 4) {
+                        VStack(
+                            alignment: message.senderId == currentUserId ? .trailing : .leading,
+                            spacing: 4
+                        ) {
                             Text(message.text)
                                 .padding(12)
                                 .background(message.senderId == currentUserId ? Color.darkblue : Color.gray.opacity(0.2))
                                 .foregroundColor(message.senderId == currentUserId ? .white : .primary)
                                 .cornerRadius(16)
                             
-                            // Show sender name if not current user
                             if message.senderId != currentUserId {
                                 Text(message.senderName)
                                     .font(.caption2)
@@ -144,10 +159,10 @@ struct LiveChatView: View {
     // MARK: - Bottom Input Bar Component
     private var bottomInputBar: some View {
         HStack {
-            // FaceTime Button
-            Button(action: {
-                viewModel.requestFaceTimeCall()
-            }) {
+            // Updated video button
+            Button {
+                viewModel.showAppleLoginSheet = true
+            } label: {
                 Image(systemName: "video.fill")
                     .foregroundColor(.darkblue)
                     .font(.system(size: 23))
@@ -181,11 +196,14 @@ struct LiveChatView: View {
 }
 
 #Preview {
-    LiveChatView(
-        currentUserId: "user123",
-        currentUserName: "Me",
-        recipientUserId: "user456",
-        recipientName: "John Doe",
-        recipientContact: "+966501234567"
-    )
+    NavigationStack {
+        LiveChatView(
+            currentUserId: "user123",
+            currentUserName: "Me",
+            recipientUserId: "user456",
+            recipientName: "John Doe",
+            recipientContact: "+966501234567"
+        )
+    }
 }
+

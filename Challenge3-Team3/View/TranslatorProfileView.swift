@@ -3,6 +3,7 @@ import SwiftUI
 // MARK: - ProfileView
 struct TranslatorProfileView: View {
     @StateObject private var viewModel = ProfileViewModel()
+    @Environment(\.dismiss) var dismiss
 
     @State private var showCustomAlert = false
     @State private var alertMessage = ""
@@ -186,7 +187,21 @@ struct TranslatorProfileView: View {
         }
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(false)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 16, weight: .semibold))
+                        
+                    }
+                    .foregroundColor(buttonColor)
+                }
+            }
+        }
         .onAppear {
             Task { await viewModel.loadUserProfile() }
         }

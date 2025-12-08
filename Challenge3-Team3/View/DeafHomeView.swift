@@ -838,7 +838,15 @@ struct HeaderView: View {
 
             HStack (spacing: 24) {
                 NavigationLink {
-                    MessagesView()
+//                    MessagesView()
+                    LiveChatView(
+                        currentUserId: "user123",
+                        currentUserName: "Me",
+                        recipientUserId: "user456",
+                        recipientName: "John Doe",
+                        recipientContact: "+966501234567"
+                    )
+
                     
                 } label: {
                     ZStack(alignment: .topTrailing) {
