@@ -4,7 +4,6 @@ import SwiftUI
 struct TranslatorProfileView: View {
     @StateObject private var viewModel = ProfileViewModel()
     @Environment(\.dismiss) var dismiss
-
     @State private var showCustomAlert = false
     @State private var alertMessage = ""
 
@@ -21,15 +20,16 @@ struct TranslatorProfileView: View {
                 VStack(spacing: 16) {
 
                     inputCard {
-                        VStack(alignment: .leading, spacing: 12) {
+                        VStack(alignment: .trailing, spacing: 12) {
 
                             // Name
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Name")
+                            VStack(alignment: .trailing, spacing: 6) {
+                                Text("الاسم")
                                     .font(.headline)
                                     .frame(maxWidth: .infinity, alignment: .leading)
+                                    .multilineTextAlignment(.leading)
 
-                                TextField("Enter name", text: $viewModel.name)
+                                TextField("أدخل الاسم", text: $viewModel.name)
                                     .textInputAutocapitalization(.words)
                                     .autocorrectionDisabled(true)
                                     .multilineTextAlignment(.leading)
@@ -39,12 +39,13 @@ struct TranslatorProfileView: View {
                             }
 
                             // Gender
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Gender")
+                            VStack(alignment: .trailing, spacing: 6) {
+                                Text("الجنس")
                                     .font(.headline)
                                     .frame(maxWidth: .infinity, alignment: .leading)
+                                    .multilineTextAlignment(.leading)
 
-                                Picker("Gender", selection: $viewModel.selectedGender) {
+                                Picker("الجنس", selection: $viewModel.selectedGender) {
                                     ForEach(Gender.allCases) { gender in
                                         Text(gender.rawValue).tag(gender)
                                     }
@@ -53,31 +54,35 @@ struct TranslatorProfileView: View {
                             }
 
                             // Age
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Age")
+                            VStack(alignment: .trailing, spacing: 6) {
+                                Text("العمر")
                                     .font(.headline)
                                     .frame(maxWidth: .infinity, alignment: .leading)
+                                    .multilineTextAlignment(.leading)
 
-                                TextField("Enter age", text: $viewModel.ageText)
+                                TextField("أدخل العمر", text: $viewModel.ageText)
                                     .keyboardType(.numberPad)
                                     .multilineTextAlignment(.leading)
                                     .padding(12)
                                     .background(Color.white)
                                     .cornerRadius(10)
 
-                                Text("Minimum age is 18 years")
+                                Text("الحد الأدنى للعمر 18 سنة")
                                     .font(.footnote)
                                     .foregroundColor(.secondary)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .frame(maxWidth: .infinity, alignment: .
+                                    leading)
+                                    .multilineTextAlignment(.leading)
                             }
 
                             // Level
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Level")
+                            VStack(alignment: .trailing, spacing: 6) {
+                                Text("المستوى")
                                     .font(.headline)
                                     .frame(maxWidth: .infinity, alignment: .leading)
+                                    .multilineTextAlignment(.leading)
 
-                                Picker("Level", selection: $viewModel.selectedLevel) {
+                                Picker("المستوى", selection: $viewModel.selectedLevel) {
                                     ForEach(Level.allCases) { level in
                                         Text(level.rawValue).tag(level)
                                     }
@@ -86,12 +91,13 @@ struct TranslatorProfileView: View {
                             }
 
                             // Plan
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Plan")
+                            VStack(alignment: .trailing, spacing: 6) {
+                                Text("الخطة")
                                     .font(.headline)
                                     .frame(maxWidth: .infinity, alignment: .leading)
+                                    .multilineTextAlignment(.leading)
 
-                                Picker("Plan", selection: $viewModel.selectedPlan) {
+                                Picker("الخطة", selection: $viewModel.selectedPlan) {
                                     ForEach(Plan.allCases) { plan in
                                         Text(plan.rawValue).tag(plan)
                                     }
@@ -106,14 +112,15 @@ struct TranslatorProfileView: View {
 
                             // Hourly rate
                             if viewModel.selectedPlan == .paid {
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text("Hourly Rate")
+                                VStack(alignment: .trailing, spacing: 6) {
+                                    Text("السعر بالساعة")
                                         .font(.headline)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .frame(maxWidth: .infinity, alignment: .trailing)
+                                        .multilineTextAlignment(.trailing)
 
-                                    TextField("Enter rate (numbers only)", text: $viewModel.hourlyRateText)
+                                    TextField("أدخل السعر (أرقام فقط)", text: $viewModel.hourlyRateText)
                                         .keyboardType(.decimalPad)
-                                        .multilineTextAlignment(.leading)
+                                        .multilineTextAlignment(.trailing)
                                         .padding(12)
                                         .background(Color.white)
                                         .cornerRadius(10)
@@ -125,6 +132,7 @@ struct TranslatorProfileView: View {
                                     .foregroundColor(.red)
                                     .font(.subheadline)
                                     .multilineTextAlignment(.center)
+                                    .frame(maxWidth: .infinity, alignment: .center)
                             }
                         }
                     }
@@ -142,7 +150,7 @@ struct TranslatorProfileView: View {
                                 if viewModel.isSaving {
                                     ProgressView().tint(.white)
                                 }
-                                Text("Save Profile")
+                                Text("حفظ الملف الشخصي")
                                     .fontWeight(.semibold)
                             }
                             .frame(maxWidth: .infinity)
@@ -162,7 +170,7 @@ struct TranslatorProfileView: View {
                         } label: {
                             HStack {
                                 Image(systemName: "trash")
-                                Text("Delete Profile")
+                                Text("حذف الملف الشخصي")
                             }
                             .frame(maxWidth: .infinity)
                             .padding()
@@ -199,12 +207,9 @@ struct TranslatorProfileView: View {
                             }
                             .foregroundColor(buttonColor)
                         }
-            }
-        }
-    
+                    }
+                }
         .environment(\.layoutDirection, .rightToLeft) // RTL
-
-        
         .onAppear {
             Task { await viewModel.loadUserProfile() }
         }
@@ -213,8 +218,8 @@ struct TranslatorProfileView: View {
     // MARK: - Show message based on action
     private func showCustomAlertWithMessage() {
         alertMessage = viewModel.lastActionIsDelete
-            ? "Data has been removed from the translator search interface successfully."
-            : "Profile saved successfully and sent to sign language translator searchers."
+            ? "تمت إزالة البيانات من واجهة البحث عن مترجمين لغة الإشارة بنجاح."
+            : "تم حفظ الملف الشخصي بنجاح وإرساله إلى الباحثين عن مترجمي الإشارة."
 
         showCustomAlert = true
     }
@@ -235,6 +240,7 @@ struct ProfileView_Previews: PreviewProvider {
         // Wrap preview in a NavigationView to simulate being pushed from parent
         NavigationView {
             TranslatorProfileView()
+                .environment(\.layoutDirection, .rightToLeft)
         }
     }
 }
@@ -255,7 +261,7 @@ struct CenteredAlertView: View {
                     .foregroundColor(.black)
                     .padding(.horizontal, 16)
 
-                Button("OK") {
+                Button("موافق") {
                     onDismiss()
                 }
                 .font(.system(size: 16, weight: .bold))
