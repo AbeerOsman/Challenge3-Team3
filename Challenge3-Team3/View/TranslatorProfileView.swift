@@ -201,6 +201,9 @@ struct TranslatorProfileView: View {
                         }
             }
         }
+    
+        .environment(\.layoutDirection, .rightToLeft) // RTL
+
         
         .onAppear {
             Task { await viewModel.loadUserProfile() }
