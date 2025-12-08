@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ChoiceView: View {
     @EnvironmentObject private var appStateManager: AppStateManager
-    @StateObject private var authViewModel = AuthViewModel()
+    @EnvironmentObject private var authViewModel: AuthViewModel
     @StateObject private var choiceViewModel = ChoiceViewModel()
 
     @State private var showDeafNameSheet = false
@@ -34,8 +34,9 @@ struct ChoiceView: View {
                         let cols = [GridItem(.adaptive(minimum: 320), spacing: 16)]
                         LazyVGrid(columns: cols, spacing: 16) {
                             ForEach(choiceViewModel.options) { option in
+                                
+                                // Deaf user
                                 if option.type == .needInterpreter {
-                                    // Deaf person requesting interpreter
                                     Button(action: {
                                         choiceViewModel.handleTap(on: option)
                                         authViewModel.saveRole(for: option.type)
@@ -50,10 +51,15 @@ struct ChoiceView: View {
                                     }
                                     .buttonStyle(CardButtonStyle())
                                     .accessibilityLabel("\(option.title). Request a live interpreter.")
-                                    
+                                
+                                // Interpreter
                                 } else {
-                                    // Interpreter offering support
-                                    NavigationLink(destination: InterpreterTabView()) {
+                                    NavigationLink(
+                                        destination:
+                                            InterpreterTabView()
+                                                .environmentObject(authViewModel)
+                                                .environmentObject(appStateManager)
+                                    ) {
                                         CardContent(
                                             title: option.title,
                                             subtitle: "Join as an interpreter",
@@ -84,7 +90,7 @@ struct ChoiceView: View {
                     Spacer()
                 }
             }
-            .navigationBarBackButtonHidden(false)  // Keep back button hidden on ChoiceView
+            .navigationBarBackButtonHidden(false)
             .sheet(isPresented: $showDeafNameSheet) {
                 DeafNameSheet(
                     authViewModel: authViewModel,
@@ -102,7 +108,7 @@ struct ChoiceView: View {
     }
 }
 
-// MARK: - Card content shared view
+// MARK: - Card Content
 struct CardContent: View {
     let title: String
     let subtitle: String
@@ -119,17 +125,17 @@ struct CardContent: View {
                         .font(.system(size: 28, weight: .semibold))
                         .foregroundColor(accent)
                 )
-                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(title)
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundColor(.primary)
-                    .lineLimit(2)
+
                 Text(subtitle)
                     .font(.system(size: 13))
                     .foregroundColor(.secondary)
             }
+
             Spacer()
 
             Image(systemName: "chevron.right")
@@ -145,7 +151,7 @@ struct CardContent: View {
     }
 }
 
-// MARK: - Button press style
+// MARK: - Button Style
 struct CardButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -160,5 +166,6 @@ struct ChoiceView_Previews: PreviewProvider {
     static var previews: some View {
         ChoiceView()
             .environmentObject(AppStateManager())
+            .environmentObject(AuthViewModel()) // ← Added for preview
     }
 }

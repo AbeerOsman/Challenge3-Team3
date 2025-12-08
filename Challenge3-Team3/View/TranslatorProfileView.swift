@@ -184,7 +184,6 @@ struct TranslatorProfileView: View {
                 }
             }
         }
-        // IMPORTANT: apply navigation modifiers here (this view should be used inside an outer NavigationView)
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(false)

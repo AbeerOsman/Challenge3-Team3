@@ -13,14 +13,18 @@ struct AllTranslatorsView: View {
     
     var body: some View {
         ZStack {
+            LinearGradient(gradient: Gradient(colors: [Color(hex: "F7F9FF"), Color(hex: "F2F6FF")]),
+                           startPoint: .topLeading, endPoint: .bottomTrailing)
+                .ignoresSafeArea()
+            
             VStack(alignment: .leading) {
                 LevelFilterView(viewModel: viewModel)
                     .padding(.horizontal, 20)
-                    .padding(.top, 20)
+                    .padding(.top, 48)
                 
                 ScrollView(.vertical) {
                     TranslatorCardsView(viewModel: viewModel)
-                        .padding(.top, 10)
+                      
                 }
             }
         }
@@ -29,7 +33,7 @@ struct AllTranslatorsView: View {
         .navigationTitle("Available Translators")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            print("📋 AllTranslatorsView appeared")
+            print("  AllTranslatorsView appeared")
             print("   ViewModel User ID: \(viewModel.deafUserId)")
             print("   ViewModel User Name: \(viewModel.deafName)")
             viewModel.clearFilter()
@@ -43,7 +47,7 @@ struct TranslatorCardsView: View {
     @ObservedObject var viewModel: TranslationViewModel
     
     var body: some View {
-        VStack(spacing: 16) {
+        VStack{
             if viewModel.isLoading {
                 ProgressView("Loading...")
                     .frame(maxWidth: .infinity)
@@ -118,7 +122,7 @@ struct TranslatorCardsView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.top, 100)
             } else {
-                LazyVStack(spacing: 16) {
+                LazyVStack{
                     ForEach(viewModel.translators) { translator in
                         TranslatorCard(translator: translator, viewModel: viewModel)
                     }
