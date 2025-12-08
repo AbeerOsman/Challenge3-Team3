@@ -149,14 +149,8 @@ struct HeaderView: View {
 
             HStack (spacing: 24) {
                 NavigationLink {
-//                    MessagesView()
-                    LiveChatView(
-                        currentUserId: "user123",
-                        currentUserName: "Me",
-                        recipientUserId: "user456",
-                        recipientName: "John Doe",
-                        recipientContact: "+966501234567"
-                    )
+                    MessagesView()
+              
 
                     
                 } label: {
