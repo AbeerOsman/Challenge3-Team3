@@ -4,7 +4,6 @@
 //
 //  Created by Eatzaz Hafiz on 02/12/2025.
 //
-
 import SwiftUI
 
 struct LiveChatView: View {
@@ -53,6 +52,7 @@ struct LiveChatView: View {
             bottomInputBar
         }
         .padding(20)
+        .navigationBarBackButtonHidden(true)   // ← hide system back, keep only custom
         .confirmationDialog(
             "Start FaceTime Call?",
             isPresented: $viewModel.showFaceTimeConfirmation,
@@ -74,11 +74,7 @@ struct LiveChatView: View {
     
     // MARK: - Top Bar Component
     private var topBar: some View {
-        ZStack {
-            Rectangle()
-                .fill(Color.white.opacity(0.1))
-                .frame(height: 60)
-
+        VStack(spacing: 0) {
             HStack {
                 Button(action: {
                     dismiss()
@@ -99,10 +95,18 @@ struct LiveChatView: View {
                 Image(systemName: "person.crop.circle.fill")
                     .foregroundColor(.primary1)
                     .font(.system(size: 30))
-                    .padding(.leading, 16)
+                    .padding(.leading, 8)
             }
             .padding(.horizontal)
+            .frame(height: 60)
+            
+            // Line under the name / top bar
+            Rectangle()
+                .fill(Color.gray.opacity(0.3))
+                .frame(height: 1)
+                .padding(.horizontal)
         }
+        .background(Color.white.opacity(0.1))
     }
     
     // MARK: - Messages List Component
@@ -116,11 +120,22 @@ struct LiveChatView: View {
                             Spacer()
                         }
                         
-                        VStack(alignment: message.senderId == currentUserId ? .trailing : .leading, spacing: 4) {
+                        VStack(
+                            alignment: message.senderId == currentUserId ? .trailing : .leading,
+                            spacing: 4
+                        ) {
                             Text(message.text)
                                 .padding(12)
-                                .background(message.senderId == currentUserId ? Color.darkblue : Color.gray.opacity(0.2))
-                                .foregroundColor(message.senderId == currentUserId ? .white : .primary)
+                                .background(
+                                    message.senderId == currentUserId
+                                    ? Color.darkblue
+                                    : Color.gray.opacity(0.2)
+                                )
+                                .foregroundColor(
+                                    message.senderId == currentUserId
+                                    ? .white
+                                    : .primary
+                                )
                                 .cornerRadius(16)
                             
                             // Show sender name if not current user

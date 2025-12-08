@@ -1226,10 +1226,10 @@ struct TranslatorCard: View {
     @ObservedObject var viewModel: TranslationViewModel
     @State private var showRequistSheet = false
     @State private var showDuplicateAlert = false
-    @State private var pressed = false
 
     var body: some View {
         HStack(spacing: 0) {
+            // Left side: avatar + info
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 12) {
                     if translator.gender == "Female" {
@@ -1258,12 +1258,18 @@ struct TranslatorCard: View {
                         
                         HStack(spacing: 6) {
                             Circle()
-                                .fill(translator.state == "متطوع" ? Color(hex: "5CB853") : Color(hex: "EBA0A0"))
+                                .fill(translator.state == "متطوع"
+                                      ? Color(hex: "5CB853")
+                                      : Color(hex: "EBA0A0"))
                                 .frame(width: 6, height: 6)
                             
                             Text(translator.state == "متطوع" ? "Volunteer" : "Paid")
                                 .font(.system(size: 13, weight: .medium))
-                                .foregroundColor(translator.state == "متطوع" ? Color(hex: "5CB853") : Color(hex: "EBA0A0"))
+                                .foregroundColor(
+                                    translator.state == "متطوع"
+                                    ? Color(hex: "5CB853")
+                                    : Color(hex: "EBA0A0")
+                                )
                         }
                     }
                 }
@@ -1276,6 +1282,7 @@ struct TranslatorCard: View {
             .padding(.leading, CardSpacing.horizontalPadding)
             .padding(.trailing, CardSpacing.horizontalPadding / 2)
             
+            // Divider
             Rectangle()
                 .fill(
                     LinearGradient(
@@ -1290,6 +1297,7 @@ struct TranslatorCard: View {
                 )
                 .frame(width: 1, height: CardSpacing.dividerHeight)
             
+            // Right side: price
             VStack(spacing: 8) {
                 VStack(spacing: 2) {
                     HStack(spacing: 4) {
@@ -1308,39 +1316,9 @@ struct TranslatorCard: View {
                         .foregroundColor(Color(hex: "9E9E9E"))
                 }
                 
-                VStack {
-                    Button {
-                        if viewModel.appointments.contains(where: { $0.translatorId == translator.id }) {
-                            showDuplicateAlert = true
-                        } else {
-                            showRequistSheet = true
-                        }
-                    } label: {
-                        HStack {
-                            Text("Contact")
-                                .foregroundColor(.white)
-                                .font(.system(size: 14, weight: .semibold))
-                        }
-                        .frame(width: 110, height: 42)
-                        .background(
-                            LinearGradient(
-                                colors: [Color(hex: "0D189F"), Color(hex: "0A1280")],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .cornerRadius(14)
-                        .shadow(color: Color(hex: "0D189F").opacity(0.3), radius: 8, x: 0, y: 4)
-                    }
-                    .alert("You already requested this translator!", isPresented: $showDuplicateAlert) {
-                        Button("OK", role: .cancel) {}
-                    }
-                }
-                .sheet(isPresented: $showRequistSheet) {
-                    RequistSheet(translator: translator, viewModel: viewModel)
-                        .presentationDetents([.medium, .large])
-                        .presentationDragIndicator(.hidden)
-                }
+                Text("Tap card to request")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(Color(hex: "9E9E9E"))
             }
             .frame(minWidth: 120, alignment: .trailing)
             .padding(.trailing, CardSpacing.horizontalPadding)
@@ -1358,12 +1336,21 @@ struct TranslatorCard: View {
                 )
         )
         .padding(.vertical, CardSpacing.verticalPadding)
-        .scaleEffect(pressed ? 0.995 : 1.0)
+        .contentShape(Rectangle())
         .onTapGesture {
-            withAnimation(.spring(response: 0.28, dampingFraction: 0.75)) {
-                pressed.toggle()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) { pressed = false }
+            if viewModel.appointments.contains(where: { $0.translatorId == translator.id }) {
+                showDuplicateAlert = true
+            } else {
+                showRequistSheet = true
             }
+        }
+        .alert("You already requested this translator!", isPresented: $showDuplicateAlert) {
+            Button("OK", role: .cancel) {}
+        }
+        .sheet(isPresented: $showRequistSheet) {
+            RequistSheet(translator: translator, viewModel: viewModel)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.hidden)
         }
     }
 }
