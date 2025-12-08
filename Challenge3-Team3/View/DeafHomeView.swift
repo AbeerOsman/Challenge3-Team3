@@ -839,6 +839,7 @@ struct HeaderView: View {
             HStack (spacing: 24) {
                 NavigationLink {
                     MessagesView()
+                    
                 } label: {
                     ZStack(alignment: .topTrailing) {
                         Image(systemName: "bubble.left.and.text.bubble.right")

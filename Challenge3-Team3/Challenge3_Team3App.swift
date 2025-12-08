@@ -12,6 +12,17 @@ struct Challenge3_Team3App: App {
 
     var body: some Scene {
         WindowGroup {
+//            splash()
+//            LiveChatView(
+//                currentUserId: "user123",
+//                currentUserName: "Me",
+//                recipientUserId: "user456",
+//                recipientName: "John Doe",
+//                recipientContact: "1234567890"
+//            )
+
+//                .environmentObject(translationViewModel) // ✨ Share with all views
+            AppContainer()
             AppContainer()
                 .environmentObject(translationViewModel)
                 .environmentObject(authViewModel)                 // ✅ inject into environment
