@@ -4,6 +4,7 @@ import SwiftUI
 struct TranslatorProfileView: View {
     @StateObject private var viewModel = ProfileViewModel()
     @Environment(\.dismiss) var dismiss
+    
     @State private var showCustomAlert = false
     @State private var alertMessage = ""
 
