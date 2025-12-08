@@ -185,23 +185,23 @@ struct TranslatorProfileView: View {
                 }
             }
         }
-        .navigationTitle("Profile")
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button(action: {
-                    dismiss()
-                }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 16, weight: .semibold))
-                        
-                    }
-                    .foregroundColor(buttonColor)
-                }
+        .navigationTitle("الملف الشخصي")
+                .navigationBarTitleDisplayMode(.inline)
+                .navigationBarBackButtonHidden(true)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button(action: {
+                            dismiss()
+                        }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 16, weight: .semibold))
+                            }
+                            .foregroundColor(buttonColor)
+                        }
             }
         }
+        
         .onAppear {
             Task { await viewModel.loadUserProfile() }
         }
