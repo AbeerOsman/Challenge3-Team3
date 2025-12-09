@@ -16,6 +16,7 @@ final class TranslatorProfileViewModel: ObservableObject {
     @Published var selectedLevel: Level = .beginner
     @Published var selectedPlan: Plan = .free
     @Published var hourlyRateText: String = ""          // نص خام يُحوّل لاحقاً إلى Double
+    @Published var selectedCareer: Career = .none      // المسار المهني (قانون، رعاية صحية، بدون، إلخ)
 
     // MARK: Published UI state (حالة الواجهة)
     @Published var isSaving: Bool = false               // لإظهار مؤشر التحميل أثناء الحفظ
@@ -112,7 +113,8 @@ final class TranslatorProfileViewModel: ObservableObject {
             age: age,
             level: selectedLevel,
             plan: selectedPlan,
-            hourlyRate: rate
+            hourlyRate: rate,
+            career: selectedCareer
         )
 
         // استخدام addDocument(data:) بأسلوب الإكمال (completion) لضمان التوافق

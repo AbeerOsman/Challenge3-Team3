@@ -1,6 +1,7 @@
 import Foundation
 import UIKit
 
+
 // MARK: - TranslatorData (مُحسّن لدعم العرض بالعربية)
 struct TranslatorData: Identifiable {
     let id: String
@@ -10,8 +11,9 @@ struct TranslatorData: Identifiable {
     let level: String
     let price: String
     let category: String
+    let career: String   // المسار المهني (قانون، رعاية صحية، بدون، إلخ)
     
-    // خاصية محسوبة لتحديد الحالة: متطوع أو مدفوع 
+    // خاصية محسوبة لتحديد الحالة: متطوع أو مدفوع
     var state: String {
         let cat = category.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         let p = price.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -45,6 +47,7 @@ struct Translator: Identifiable {
     let rating: Double
     let tags: [String]
     var isAvailable: Bool
+    let career: String   // المسار المهني للعرض في الواجهة
 }
 
 // MARK: - Translator level (قيم معروضة بالعربية)

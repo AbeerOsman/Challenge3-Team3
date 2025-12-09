@@ -17,6 +17,7 @@ final class ProfileViewModel: ObservableObject {
     @Published var selectedLevel: Level = .beginner
     @Published var selectedPlan: Plan = .free
     @Published var hourlyRateText: String = ""          // نص خام يُحوّل لاحقاً إلى Double
+    @Published var selectedCareer: Career = .none       // NEW: المسار المهني
 
     // MARK: Published UI state (حالة الواجهة)
     @Published var isSaving: Bool = false               // لإظهار مؤشر التحميل أثناء الحفظ
@@ -73,7 +74,7 @@ final class ProfileViewModel: ObservableObject {
 
     // MARK: - Helper: build dictionary for Firestore
     private var asDictionary: [String: Any] {
-        [
+        var dict: [String: Any] = [
             "name": name.trimmingCharacters(in: .whitespacesAndNewlines),
             "gender": selectedGender.rawValue,
             "age": parseAge() ?? 0,
@@ -81,6 +82,9 @@ final class ProfileViewModel: ObservableObject {
             "plan": selectedPlan.rawValue,
             "hourlyRate": (selectedPlan == .free) ? 0 : (parseHourlyRate() ?? 0)
         ]
+        // NEW: include career
+        dict["career"] = selectedCareer.rawValue
+        return dict
     }
 
     // MARK: - Local cache helpers
@@ -110,6 +114,10 @@ final class ProfileViewModel: ObservableObject {
             } else if let rateInt = dict["hourlyRate"] as? Int {
                 self.hourlyRateText = rateInt == 0 ? "" : "\(rateInt)"
             }
+            // NEW: load career
+            if let c = dict["career"] as? String, let careerEnum = Career(rawValue: c) {
+                self.selectedCareer = careerEnum
+            }
         }
     }
 
@@ -120,6 +128,7 @@ final class ProfileViewModel: ObservableObject {
         self.selectedLevel = .beginner
         self.selectedPlan = .free
         self.hourlyRateText = ""
+        self.selectedCareer = .none
     }
 
     // MARK: - Save (create or update same document using UserDefaults-stored docID) + cache locally
@@ -202,6 +211,10 @@ final class ProfileViewModel: ObservableObject {
             } else if let rateInt = data["hourlyRate"] as? Int {
                 self.hourlyRateText = rateInt == 0 ? "" : "\(rateInt)"
             }
+            // NEW: load career from Firestore
+            if let c = data["career"] as? String, let careerEnum = Career(rawValue: c) {
+                self.selectedCareer = careerEnum
+            }
 
             // بعد التحديث من السحابة، حدّث النسخة المحلية
             cacheLocalProfile(asDictionary)
@@ -235,3 +248,4 @@ final class ProfileViewModel: ObservableObject {
         }
     }
 }
+
