@@ -35,7 +35,7 @@ struct TranslatorData: Identifiable {
     }
 }
 
-// MARK: - Translator model (عرضي مُعروض بالعربية)
+// MARK: - Translator model
 struct Translator: Identifiable {
     let id = UUID()
     let name: String
@@ -47,17 +47,16 @@ struct Translator: Identifiable {
     var isAvailable: Bool
 }
 
-// MARK: - Translator level (قيم معروضة بالعربية)
+// MARK: - Translator level
 enum TranslatorLevel: String {
     case beginner = "مبتدئ"
     case intermediate = "متوسط"
     case advanced = "متقدم"
     
-    // نص العرض (يمكن استخدام rawValue)
     var display: String { rawValue }
 }
 
-// MARK: - حالة الموعد (مع نص عربي للعرض)
+// MARK: - حالة الموعد()
 enum AppointmentStatus {
     case pending
     case completed

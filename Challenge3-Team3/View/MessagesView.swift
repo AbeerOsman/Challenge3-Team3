@@ -25,78 +25,85 @@ struct MessagesView: View {
     ]
     
     var body: some View {
-        VStack(spacing: 0) {
+        ZStack {
+            // subtle two-tone background
+            LinearGradient(gradient: Gradient(colors: [Color(hex: "F7F9FF"), Color(hex: "F2F6FF")]),
+                           startPoint: .topLeading, endPoint: .bottomTrailing)
+            .ignoresSafeArea()
             
-            // MARK: - Header
-            HStack {
-                Text("Messages")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundColor(.black)
-                Spacer()
-            }
-            .padding()
-            
-            Divider()
-            
-            // MARK: - Empty State
-            if dummyMessages.isEmpty {
+            VStack(spacing: 0) {
                 
-                Spacer()
-                
-                Image(systemName: "bubble.left.and.text.bubble.right")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 55, height: 55)
-                    .foregroundColor(.gray.opacity(0.7))
-                
-                Text("No messages available")
-                    .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(.gray)
-                
-                Spacer()
-                
-            } else {
-                
-                // MARK: - List of message threads
-                List(dummyMessages) { message in
-                    NavigationLink {
-                        LiveChatView(
-                            currentUserId: "currentUser123",
-                            currentUserName: "Me",
-                            recipientUserId: message.senderId,
-                            recipientName: message.senderName,
-                            recipientContact: "0000000000"
-                        )
-                    } label: {
-                        HStack(spacing: 12) {
-                            
-                            Image(systemName: "person.crop.circle.fill")
-                                .font(.system(size: 40))
-                                .foregroundColor(.primary1)
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(message.senderName)
-                                    .font(.system(size: 16, weight: .semibold))
-                                
-                                Text(message.text)
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.gray)
-                                    .lineLimit(1)
-                            }
-                            
-                            Spacer()
-                            
-                            Text(formattedTime(message.timestamp))
-                                .font(.system(size: 12))
-                                .foregroundColor(.gray)
-                        }
-                        .padding(.vertical, 8)
-                    }
+                // MARK: - Header
+                HStack {
+                    Text("Messages")
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundColor(.black)
+                    Spacer()
                 }
-                .listStyle(.plain)
+                .padding()
+                
+                Divider()
+                
+                // MARK: - Empty State
+                if dummyMessages.isEmpty {
+                    
+                    Spacer()
+                    
+                    Image(systemName: "bubble.left.and.text.bubble.right")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 55, height: 55)
+                        .foregroundColor(.gray.opacity(0.7))
+                    
+                    Text("No messages available")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(.gray)
+                    
+                    Spacer()
+                    
+                } else {
+                    
+                    // MARK: - List of message threads
+                    List(dummyMessages) { message in
+                        NavigationLink {
+                            LiveChatView(
+                                currentUserId: "currentUser123",
+                                currentUserName: "Me",
+                                recipientUserId: message.senderId,
+                                recipientName: message.senderName,
+                                recipientContact: "0000000000"
+                            )
+                        } label: {
+                            HStack(spacing: 12) {
+                                
+                                Image(systemName: "person.crop.circle.fill")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(.primary1)
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(message.senderName)
+                                        .font(.system(size: 16, weight: .semibold))
+                                    
+                                    Text(message.text)
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.gray)
+                                        .lineLimit(1)
+                                }
+                                
+                                Spacer()
+                                
+                                Text(formattedTime(message.timestamp))
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.gray)
+                            }
+                            .padding(.vertical, 8)
+                        }
+                    }
+                    .listStyle(.plain)
+                }
             }
+            .navigationBarBackButtonHidden(false)
         }
-        .navigationBarBackButtonHidden(false)
     }
     
     // MARK: - Time Formatter

@@ -16,7 +16,7 @@ struct DeafNameSheet: View {
                 .frame(width: 40, height: 5)
                 .padding(.top, 8)
 
-            Text("أدخل اسمك")
+            Text(" أدخل إسمك الكامل")
                 .font(.system(size: 22, weight: .bold))
                 .foregroundColor(.primary)
                 .padding(.top, 8)
