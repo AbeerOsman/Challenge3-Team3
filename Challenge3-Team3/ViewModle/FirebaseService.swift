@@ -44,6 +44,7 @@ class FirebaseService {
                     
                     var price = 0
                     var category = ""
+                    let career = data["career"] as? String ?? ""   // NEW
                     
                     if let priceValue = data["price"] as? Int {
                         price = priceValue
@@ -64,7 +65,8 @@ class FirebaseService {
                         age: "\(age)",
                         level: level,
                         price: "\(price)",
-                        category: category
+                        category: category,
+                        career: career              // NEW
                     )
                 }
                 
@@ -105,6 +107,7 @@ class FirebaseService {
                     
                     var price = 0
                     var category = ""
+                    let career = data["career"] as? String ?? ""   // NEW
                     
                     if let priceValue = data["price"] as? Int {
                         price = priceValue
@@ -125,7 +128,8 @@ class FirebaseService {
                         age: "\(age)",
                         level: level,
                         price: "\(price)",
-                        category: category
+                        category: category,
+                        career: career              // NEW
                     )
                 }
                 
@@ -230,7 +234,6 @@ class FirebaseService {
     ) {
         print("🗑️ Deleting all appointments for user: \(userId)")
         
-        // First, fetch all appointments for this user
         db.collection("appointments")
             .whereField("deafUserId", isEqualTo: userId)
             .getDocuments { snapshot, error in
@@ -248,14 +251,12 @@ class FirebaseService {
                 
                 print("📦 Found \(documents.count) appointments to delete for user: \(userId)")
                 
-                // If no appointments, return success
                 if documents.isEmpty {
                     print("✅ No appointments to delete")
                     completion(.success(()))
                     return
                 }
                 
-                // Delete all appointments in batch
                 let batch = self.db.batch()
                 
                 for document in documents {
@@ -263,7 +264,6 @@ class FirebaseService {
                     print("   ➕ Marked appointment for deletion: \(document.documentID)")
                 }
                 
-                // Commit the batch
                 batch.commit { error in
                     if let error = error {
                         print("❌ Error batch deleting appointments: \(error.localizedDescription)")

@@ -1,5 +1,6 @@
 import Foundation
 import FirebaseFirestore
+//import FirebaseFirestoreSwift
 
 // MARK: - Enumerations (مع قيم عرضية باللغة العربية)
 enum Gender: String, CaseIterable, Identifiable, Codable {
@@ -18,6 +19,17 @@ enum Level: String, CaseIterable, Identifiable, Codable {
 enum Plan: String, CaseIterable, Identifiable, Codable {
     case free = "متطوع"
     case paid = "مدفوع"
+    var id: String { rawValue }
+}
+
+// المسار المهني
+enum Career: String, CaseIterable, Identifiable, Codable {
+    case none       = "بدون"
+    case law        = "القانون"
+    case healthcare = "الرعاية الصحية"
+    case education  = "التعليم"
+    case other      = "أخرى"
+
     var id: String { rawValue }
 }
 
@@ -163,9 +175,10 @@ struct UserProfile: Identifiable, Codable {
     var level: Level
     var plan: Plan
     var hourlyRate: Double
+    var career: Career?   // المسار المهني اختياري لتوافق البيانات القديمة
 
     var asDictionary: [String: Any] {
-        [
+        var dict: [String: Any] = [
             "name": name,
             "gender": gender.rawValue,   // الآن ستكون القيمة العربية عند التخزين
             "age": age,
@@ -173,5 +186,9 @@ struct UserProfile: Identifiable, Codable {
             "plan": plan.rawValue,
             "hourlyRate": hourlyRate
         ]
+        if let career = career {
+            dict["career"] = career.rawValue
+        }
+        return dict
     }
 }
