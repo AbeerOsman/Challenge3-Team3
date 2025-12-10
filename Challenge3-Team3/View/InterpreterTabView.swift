@@ -1,18 +1,13 @@
-//
-//  InterpreterTabView.swift
-//  Challenge3-Team3
-//
-//  Created by alya Alabdulrahim on 12/06/1447 AH.
-//
-
 import SwiftUI
 
 struct InterpreterTabView: View {
+    @EnvironmentObject private var appStateManager: AppStateManager
+    @EnvironmentObject private var authViewModel: AuthViewModel
+    
     var body: some View {
         TabView {
-
             // Profile Tab
-            TranslatorProfileView()
+            MainTranslatorProfileView()
                 .tabItem {
                     Image(systemName: "person.crop.circle")
                     Text("الملف الشخصي")
@@ -24,8 +19,6 @@ struct InterpreterTabView: View {
                     Image(systemName: "bubble.left.and.bubble.right")
                     Text("الرسائل")
                 }
-
-          
         }
         .tint(Color("darkblue"))
         .environment(\.layoutDirection, .rightToLeft)
@@ -34,4 +27,7 @@ struct InterpreterTabView: View {
 
 #Preview {
     InterpreterTabView()
+        .environmentObject(AppStateManager())
+        .environmentObject(AuthViewModel())
+        .environment(\.layoutDirection, .rightToLeft)
 }

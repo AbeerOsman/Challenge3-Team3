@@ -1,35 +1,39 @@
+// ⚠️ DELETE THE OLD TranslatorProfileViewModel FILE
+//
+// REPLACEMENT INSTRUCTIONS:
+// 1. Delete the old "TranslatorProfileViewModel.swift" file from your project
+// 2. Use the "ProfileViewModel" instead (it has the same functionality + multi-career support)
+// 3. Replace all occurrences of @StateObject private var viewModel = TranslatorProfileViewModel()
+//    with: @StateObject private var viewModel = ProfileViewModel()
+//
+// Below is the complete ProfileViewModel that replaces the old one:
+
 import Foundation
 import Combine
 import FirebaseFirestore
 
-// MARK: - ProfileViewModel
-// يحفظ ويحمّل بيانات المستخدم على نفس الجهاز باستخدام UserDefaults + Firestore:
-// - أول حفظ: إنشاء مستند جديد وتخزين docID محلياً + تخزين نسخة محلية من البيانات.
-// - لاحقاً: تحديث نفس المستند فقط (بدون إنشاء مستند جديد) + تحديث النسخة المحلية.
-// - عند العودة للتطبيق: تحميل النسخة المحلية فوراً، ثم محاولة تحديثها من Firestore إذا توفر docID.
-// - الحذف: حذف نفس المستند وإزالة docID والنسخة المحلية وتفريغ الحقول.
 @MainActor
 final class ProfileViewModel: ObservableObject {
-    // MARK: Published inputs (مدخلات الواجهة)
+    // MARK: Published inputs
     @Published var name: String = ""
     @Published var selectedGender: Gender = .male
-    @Published var ageText: String = ""                 // نص خام يُحوّل لاحقاً إلى Int
+    @Published var ageText: String = ""
     @Published var selectedLevel: Level = .beginner
     @Published var selectedPlan: Plan = .free
-    @Published var hourlyRateText: String = ""          // نص خام يُحوّل لاحقاً إلى Double
-    @Published var selectedCareer: Career = .none       // NEW: المسار المهني
+    @Published var hourlyRateText: String = ""
+    @Published var selectedCareers: Set<Career> = []  
 
-    // MARK: Published UI state (حالة الواجهة)
-    @Published var isSaving: Bool = false               // لإظهار مؤشر التحميل أثناء الحفظ
-    @Published var showSuccessAlert: Bool = false       // لعرض تنبيه النجاح
-    @Published var errorMessage: String? = nil          // لعرض رسالة خطأ عند الحاجة
-    @Published var lastActionIsDelete: Bool = false     // لتمييز نص التنبيه بين الحفظ/الحذف
+    // MARK: Published UI state
+    @Published var isSaving: Bool = false
+    @Published var showSuccessAlert: Bool = false
+    @Published var errorMessage: String? = nil
+    @Published var lastActionIsDelete: Bool = false
 
     // MARK: Dependencies
     private let db = Firestore.firestore()
     private let defaults = UserDefaults.standard
-    private let userDocIDKey = "userDocumentID"         // لتخزين معرف المستند
-    private let userLocalProfileKey = "userLocalProfile"// لتخزين نسخة محلية من بيانات المستخدم
+    private let userDocIDKey = "userDocumentID"
+    private let userLocalProfileKey = "userLocalProfile"
 
     // MARK: - Arabic digits normalization
     private func normalizeArabicDigits(in text: String) -> String {
@@ -82,8 +86,12 @@ final class ProfileViewModel: ObservableObject {
             "plan": selectedPlan.rawValue,
             "hourlyRate": (selectedPlan == .free) ? 0 : (parseHourlyRate() ?? 0)
         ]
-        // NEW: include career
-        dict["career"] = selectedCareer.rawValue
+        // ✅ Store all selected careers as array
+        if !selectedCareers.isEmpty {
+            dict["careers"] = selectedCareers.map { $0.rawValue }
+        } else {
+            dict["careers"] = []
+        }
         return dict
     }
 
@@ -114,9 +122,9 @@ final class ProfileViewModel: ObservableObject {
             } else if let rateInt = dict["hourlyRate"] as? Int {
                 self.hourlyRateText = rateInt == 0 ? "" : "\(rateInt)"
             }
-            // NEW: load career
-            if let c = dict["career"] as? String, let careerEnum = Career(rawValue: c) {
-                self.selectedCareer = careerEnum
+            // ✅ Load multiple careers
+            if let careersArray = dict["careers"] as? [String] {
+                self.selectedCareers = Set(careersArray.compactMap { Career(rawValue: $0) })
             }
         }
     }
@@ -128,10 +136,10 @@ final class ProfileViewModel: ObservableObject {
         self.selectedLevel = .beginner
         self.selectedPlan = .free
         self.hourlyRateText = ""
-        self.selectedCareer = .none
+        self.selectedCareers = []
     }
 
-    // MARK: - Save (create or update same document using UserDefaults-stored docID) + cache locally
+    // MARK: - Save
     func saveUserProfile() async {
         if let validationError = validateInputs() {
             errorMessage = validationError
@@ -145,52 +153,55 @@ final class ProfileViewModel: ObservableObject {
         let dictToSave = asDictionary
 
         if let docID = defaults.string(forKey: userDocIDKey), !docID.isEmpty {
-            // تحديث نفس المستند
+            // Update existing document
             do {
                 try await db.collection("users").document(docID).setData(dictToSave, merge: true)
-                // تحديث النسخة المحلية أيضاً
                 cacheLocalProfile(dictToSave)
                 lastActionIsDelete = false
                 showSuccessAlert = true
+                print("✅ Profile updated successfully: \(docID)")
             } catch {
                 errorMessage = "فشل تحديث البيانات: \(error.localizedDescription)"
                 showSuccessAlert = false
+                print("❌ Error updating profile: \(error.localizedDescription)")
             }
             isSaving = false
             return
         }
 
-        // أول مرة: إنشاء مستند جديد ثم تخزين docID وتخزين نسخة محلية
+        // Create new document
         do {
             let ref = try await db.collection("users").addDocument(data: dictToSave)
             defaults.set(ref.documentID, forKey: userDocIDKey)
             cacheLocalProfile(dictToSave)
             lastActionIsDelete = false
             showSuccessAlert = true
+            print("✅ Profile saved successfully with ID: \(ref.documentID)")
         } catch {
             errorMessage = "حدث خطأ أثناء الحفظ: \(error.localizedDescription)"
             showSuccessAlert = false
+            print("❌ Error saving profile: \(error.localizedDescription)")
         }
         isSaving = false
     }
 
-    // MARK: - Load profile: show local cache first, then refresh from Firestore if possible
+    // MARK: - Load profile
     func loadUserProfile() async {
         errorMessage = nil
-
-        // أولاً: حمّل النسخة المحلية فوراً (تظهر مباشرة على الجهاز)
         loadLocalProfileIfAvailable()
 
-        // ثانياً: إن وُجد docID، حاول التحديث من Firestore
         guard let docID = defaults.string(forKey: userDocIDKey), !docID.isEmpty else {
+            print("ℹ️ No saved profile found")
             return
         }
 
         do {
             let snapshot = try await db.collection("users").document(docID).getDocument()
-            guard let data = snapshot.data() else { return }
+            guard let data = snapshot.data() else {
+                print("⚠️ Snapshot has no data")
+                return
+            }
 
-            // عبِّئ الحقول من السحابة
             if let n = data["name"] as? String { self.name = n }
             if let g = data["gender"] as? String, let genderEnum = Gender(rawValue: g) {
                 self.selectedGender = genderEnum
@@ -211,19 +222,20 @@ final class ProfileViewModel: ObservableObject {
             } else if let rateInt = data["hourlyRate"] as? Int {
                 self.hourlyRateText = rateInt == 0 ? "" : "\(rateInt)"
             }
-            // NEW: load career from Firestore
-            if let c = data["career"] as? String, let careerEnum = Career(rawValue: c) {
-                self.selectedCareer = careerEnum
+            // ✅ Load multiple careers from Firestore
+            if let careersArray = data["careers"] as? [String] {
+                self.selectedCareers = Set(careersArray.compactMap { Career(rawValue: $0) })
             }
 
-            // بعد التحديث من السحابة، حدّث النسخة المحلية
             cacheLocalProfile(asDictionary)
+            print("✅ Profile loaded from Firestore")
         } catch {
             self.errorMessage = "فشل تحميل البيانات: \(error.localizedDescription)"
+            print("❌ Error loading profile: \(error.localizedDescription)")
         }
     }
 
-    // MARK: - Delete same document using stored docID + clear local cache
+    // MARK: - Delete
     func deleteUserProfile() async {
         errorMessage = nil
         showSuccessAlert = false
@@ -235,17 +247,16 @@ final class ProfileViewModel: ObservableObject {
 
         do {
             try await db.collection("users").document(docID).delete()
-            // إزالة المراجع المحلية
             defaults.removeObject(forKey: userDocIDKey)
             defaults.removeObject(forKey: userLocalProfileKey)
-            // تفريغ الحقول محلياً (المسح من الكارد مباشرة)
             resetLocalFields()
 
             lastActionIsDelete = true
             showSuccessAlert = true
+            print("✅ Profile deleted successfully")
         } catch {
             errorMessage = "فشل حذف البيانات: \(error.localizedDescription)"
+            print("❌ Error deleting profile: \(error.localizedDescription)")
         }
     }
 }
-

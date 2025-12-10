@@ -141,7 +141,10 @@ struct HeaderView: View {
                 Text("مرحبًا،")
                     .font(.system(size: 19, weight: .regular))
                     .foregroundColor(Color(hex: "666666"))
-
+                
+                Text(deafName.isEmpty ? "" : deafName)
+                    .font(.system(size: 19, weight: .semibold))
+                    .foregroundColor(Color(hex: "0B1A66"))
             }
 
             Spacer()
@@ -219,12 +222,12 @@ struct HeaderView: View {
         //.padding(.vertical, 8)
         .padding(.top, 32)
         
-        HStack{
-            Text(deafName.isEmpty ? "المستخدم" : deafName)
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(Color(hex: "0B1A66"))
-            Spacer()
-        }
+//        HStack{
+//            Text(deafName.isEmpty ? "" : deafName)
+//                .font(.system(size: 18, weight: .semibold))
+//                .foregroundColor(Color(hex: "0B1A66"))
+//            Spacer()
+//        }
     }
 }
 
@@ -551,7 +554,7 @@ struct TranslatorCard: View {
             // Left side: avatar + info
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 12) {
-                    if translator.gender == "Female" {
+                    if translator.gender == "أنثى" {
                         Image("femaleIcon")
                             .resizable()
                             .renderingMode(.template)
@@ -700,7 +703,7 @@ struct TranslatorCard: View {
         }
         .sheet(isPresented: $showRequistSheet) {
             RequistSheet(translator: translator, viewModel: viewModel)
-                .presentationDetents([.medium, .large])
+                .presentationDetents([.large, .large])
                 .presentationDragIndicator(.hidden)
         }
     }

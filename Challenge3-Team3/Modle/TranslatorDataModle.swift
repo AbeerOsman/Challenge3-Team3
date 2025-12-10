@@ -11,7 +11,7 @@ struct TranslatorData: Identifiable {
     let level: String
     let price: String
     let category: String
-    let career: String   // المسار المهني (قانون، رعاية صحية، بدون، إلخ)
+    let career: String
     
     // خاصية محسوبة لتحديد الحالة: متطوع أو مدفوع
     var state: String {

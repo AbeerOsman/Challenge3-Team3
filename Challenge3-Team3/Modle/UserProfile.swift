@@ -1,8 +1,7 @@
 import Foundation
 import FirebaseFirestore
-//import FirebaseFirestoreSwift
 
-// MARK: - Enumerations (مع قيم عرضية باللغة العربية)
+// MARK: - Enumerations
 enum Gender: String, CaseIterable, Identifiable, Codable {
     case male = "ذكر"
     case female = "أنثى"
@@ -22,18 +21,18 @@ enum Plan: String, CaseIterable, Identifiable, Codable {
     var id: String { rawValue }
 }
 
-// المسار المهني
-enum Career: String, CaseIterable, Identifiable, Codable {
-    case none       = "بدون"
-    case law        = "القانون"
+enum Career: String, CaseIterable, Identifiable, Codable, Hashable {
+    case none = "عام"
+    case law = "القانون"
     case healthcare = "الرعاية الصحية"
-    case education  = "التعليم"
-    case other      = "أخرى"
+    case education = "التعليم"
+    case engneering = "العقار"
+    case business = "التجارة"
 
     var id: String { rawValue }
 }
 
-// MARK: - أدوات تطبيع عربية (منطق كما هو)
+// MARK: - Arabic utilities
 private extension String {
     var trimmedLowercased: String {
         trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -41,19 +40,16 @@ private extension String {
 
     func normalizeArabic() -> String {
         var s = self
-        // أحرف تشكيل (حذف)
         let diacritics: [Character] = [
             "\u{064B}", "\u{064C}", "\u{064D}",
             "\u{064E}", "\u{064F}", "\u{0650}",
             "\u{0651}", "\u{0652}"
         ]
         s.removeAll(where: { diacritics.contains($0) })
-        // توحيد بعض الحروف
         s = s.replacingOccurrences(of: "أ", with: "ا")
         s = s.replacingOccurrences(of: "إ", with: "ا")
         s = s.replacingOccurrences(of: "آ", with: "ا")
         s = s.replacingOccurrences(of: "ة", with: "ه")
-        // توحيد المسافات المتعددة
         s = s.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
         return s.trimmingCharacters(in: .whitespacesAndNewlines)
     }
@@ -64,7 +60,7 @@ private func matchArabic(_ raw: String, candidates: [String]) -> Bool {
     return candidates.map { $0.normalizeArabic() }.contains(n)
 }
 
-// MARK: - مرونة فك الترميز/الترميز (تقبل قيم عربية وإنجليزية وأرقام)
+// MARK: - Flexible decoding for enums
 extension Gender {
     init(from decoder: Decoder) throws {
         let c = try decoder.singleValueContainer()
@@ -92,7 +88,6 @@ extension Gender {
 
     func encode(to encoder: Encoder) throws {
         var c = encoder.singleValueContainer()
-        // نرسل القيمة العرضية (العربية) كي تظهر في قاعدة البيانات باللغة العربية
         try c.encode(rawValue)
     }
 }
@@ -166,7 +161,7 @@ extension Plan {
     }
 }
 
-// MARK: - نموذج المستخدم
+// MARK: - UserProfile model with multiple careers support
 struct UserProfile: Identifiable, Codable {
     @DocumentID var id: String?
     var name: String
@@ -175,19 +170,19 @@ struct UserProfile: Identifiable, Codable {
     var level: Level
     var plan: Plan
     var hourlyRate: Double
-    var career: Career?   // المسار المهني اختياري لتوافق البيانات القديمة
+    var careers: [Career]?   // Support multiple careers
 
     var asDictionary: [String: Any] {
         var dict: [String: Any] = [
             "name": name,
-            "gender": gender.rawValue,   // الآن ستكون القيمة العربية عند التخزين
+            "gender": gender.rawValue,
             "age": age,
             "level": level.rawValue,
             "plan": plan.rawValue,
             "hourlyRate": hourlyRate
         ]
-        if let career = career {
-            dict["career"] = career.rawValue
+        if let careers = careers, !careers.isEmpty {
+            dict["careers"] = careers.map { $0.rawValue }
         }
         return dict
     }
