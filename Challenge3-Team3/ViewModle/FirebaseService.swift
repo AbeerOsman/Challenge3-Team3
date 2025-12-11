@@ -44,14 +44,32 @@ class FirebaseService {
                     
                     var price = 0
                     var category = ""
-                    let career = data["career"] as? String ?? ""   // NEW
                     
+                    // Handle price field (can be "price" or "hourlyRate")
                     if let priceValue = data["price"] as? Int {
                         price = priceValue
                         category = data["category"] as? String ?? ""
                     } else if let hourlyRate = data["hourlyRate"] as? Int {
                         price = hourlyRate
                         category = data["plan"] as? String ?? ""
+                    } else if let hourlyRate = data["hourlyRate"] as? Double {
+                        price = Int(hourlyRate)
+                        category = data["plan"] as? String ?? ""
+                    }
+                    
+                    // ✅ NEW: Handle multiple careers
+                    var careersArray: [String] = []
+                    var careerDisplayString = ""
+                    
+                    if let careersFromFirebase = data["careers"] as? [String] {
+                        careersArray = careersFromFirebase.filter { !$0.isEmpty && $0 != "بدون" }
+                        careerDisplayString = careersArray.joined(separator: "، ")
+                    } else if let singleCareer = data["career"] as? String {
+                        // Fallback for old data format
+                        if !singleCareer.isEmpty && singleCareer != "بدون" {
+                            careersArray = [singleCareer]
+                            careerDisplayString = singleCareer
+                        }
                     }
                     
                     guard !name.isEmpty && !level.isEmpty else {
@@ -66,7 +84,8 @@ class FirebaseService {
                         level: level,
                         price: "\(price)",
                         category: category,
-                        career: career              // NEW
+                        career: careerDisplayString,  // ✅ Display string from array
+                        careers: careersArray  // ✅ Full array
                     )
                 }
                 
@@ -107,7 +126,6 @@ class FirebaseService {
                     
                     var price = 0
                     var category = ""
-                    let career = data["career"] as? String ?? ""   // NEW
                     
                     if let priceValue = data["price"] as? Int {
                         price = priceValue
@@ -115,6 +133,24 @@ class FirebaseService {
                     } else if let hourlyRate = data["hourlyRate"] as? Int {
                         price = hourlyRate
                         category = data["plan"] as? String ?? ""
+                    } else if let hourlyRate = data["hourlyRate"] as? Double {
+                        price = Int(hourlyRate)
+                        category = data["plan"] as? String ?? ""
+                    }
+                    
+                    // ✅ NEW: Handle multiple careers
+                    var careersArray: [String] = []
+                    var careerDisplayString = ""
+                    
+                    if let careersFromFirebase = data["careers"] as? [String] {
+                        careersArray = careersFromFirebase.filter { !$0.isEmpty && $0 != "بدون" }
+                        careerDisplayString = careersArray.joined(separator: "، ")
+                    } else if let singleCareer = data["career"] as? String {
+                        // Fallback for old data format
+                        if !singleCareer.isEmpty && singleCareer != "بدون" {
+                            careersArray = [singleCareer]
+                            careerDisplayString = singleCareer
+                        }
                     }
                     
                     guard !name.isEmpty && !level.isEmpty else {
@@ -129,7 +165,8 @@ class FirebaseService {
                         level: level,
                         price: "\(price)",
                         category: category,
-                        career: career              // NEW
+                        career: careerDisplayString,  // ✅ Display string
+                        careers: careersArray  // ✅ Full array
                     )
                 }
                 
@@ -283,7 +320,7 @@ class FirebaseService {
         appointmentsListener?.remove()
     }
     
-    // MARK: - Deaf users (ONLY this collection will be touched)
+    // MARK: - Deaf users
     func deleteDeafUser(
         userId: String,
         completion: @escaping (Result<Void, Error>) -> Void

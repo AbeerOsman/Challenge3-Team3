@@ -1,214 +1,9 @@
-//import SwiftUI
-//
-//struct RequistSheet: View {
-//    let translator: TranslatorData
-//    @ObservedObject var viewModel: TranslationViewModel
-//    @Environment(\.dismiss) var dismiss
-//    @State private var showSuccessMessage = false
-//    @State private var isSubmitting = false
-//    
-//    var body: some View {
-//        VStack(spacing: 20) {
-//            HStack {
-//                Color.clear.frame(width: 20, height: 20)
-//                Spacer()
-//                Button {
-//                    dismiss()
-//                } label: {
-//                    Image(systemName: "xmark")
-//                        .font(.system(size: 20))
-//                        .foregroundColor(.gray)
-//                }
-//            }
-//            .padding(.horizontal, 24)
-//            .padding(.top, 20)
-//            
-//            
-//            VStack(spacing: 16) {
-//                // Career Section
-//                if !translator.career.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-//                   translator.career != "بدون" {
-//                    VStack(alignment: .leading, spacing: 8) {
-//                        // Section header with icon
-//                        HStack(spacing: 8) {
-//                            Image(systemName: "briefcase.fill")
-//                            Text("المجالات")
-//                        }
-//                        
-//                        // Career display
-//                        Text(translator.career)
-//                            .padding(.horizontal, 12)
-//                            .padding(.vertical, 8)
-//                            .background(Color(hex: "F5F7FB"))
-//                            .cornerRadius(8)
-//                    }
-//                }
-//                if translator.gender == "أنثى" {
-//                    Image(.femaleIcon)
-//                        .resizable()
-//                        .renderingMode(.template)
-//                        .scaledToFit()
-//                        .frame(width: 70, height: 70)
-//                        .foregroundColor(Color(hex: "DC7F7F"))
-//                } else {
-//                    Image(.maleIcon)
-//                        .resizable()
-//                        .renderingMode(.template)
-//                        .scaledToFit()
-//                        .frame(width: 70, height: 70)
-//                        .foregroundColor(Color(hex: "092B6F"))
-//                }
-//                
-//                Text(translator.name)
-//                    .font(.system(size: 24, weight: .bold))
-//                    .foregroundColor(Color(hex: "1A1A1A"))
-//                
-//                HStack(spacing: 12) {
-//                    TagView(text: translator.gender == "أنثى" ? "أنثى" : "ذكر", icon: "person.fill")
-//                    TagView(text: translator.age, icon: "calendar")
-//                    TagView(text: translator.level, icon: "star.fill")
-//                }
-//                
-//                HStack(spacing: 8) {
-//                    
-//                    Text(translator.price)
-//                        .font(.system(size: 32, weight: .bold))
-//                        .foregroundColor(Color(hex: "0D189F"))
-//                    
-//                    Text("/ الساعة")
-//                        .font(.system(size: 18))
-//                        .foregroundColor(.gray)
-//                    
-//                    Image(.ريال)
-//                        .resizable()
-//                        .scaledToFit()
-//                        .frame(width: 26, height: 26)
-//                }
-//                
-//            }
-//            .padding(.vertical, 20)
-//            
-//            VStack(spacing: 12) {
-//
-//                Text("هل تريد بالتأكيد إرسال طلب تواصل إلى المترجم؟")
-//                    .font(.system(size: 20, weight: .bold))
-//                    .multilineTextAlignment(.center)
-//                    .foregroundColor(.black)
-//                    .lineLimit(nil)
-//                    .fixedSize(horizontal: false, vertical: true)
-//
-//                Text("بمجرد إرسال طلبك، ستفتح محادثة تلقائية بينك ومترجم.")
-//                    .font(.subheadline)
-//                    .multilineTextAlignment(.center)
-//                    .foregroundColor(.black)
-//                    .lineLimit(nil)
-//                    .fixedSize(horizontal: false, vertical: true)
-//
-//            }
-//            .padding(.horizontal, 36)
-//            .padding(.top, 6)
-//            
-//            Spacer()
-//            
-//            if showSuccessMessage {
-//                HStack(spacing: 12) {
-//                    Image(systemName: "checkmark.circle.fill")
-//                        .foregroundColor(.green)
-//                        .font(.system(size: 24))
-//                    
-//                    Text("تم إرسال الطلب بنجاح!")
-//                        .font(.system(size: 16, weight: .semibold))
-//                        .foregroundColor(.green)
-//                }
-//                .padding()
-//                .background(Color.green.opacity(0.1))
-//                .cornerRadius(12)
-//            }
-//            
-//            if let error = viewModel.errorMessage {
-//                HStack(spacing: 12) {
-//                    Image(systemName: "exclamationmark.triangle.fill")
-//                        .foregroundColor(.red)
-//                        .font(.system(size: 24))
-//                    
-//                    Text(error)
-//                        .font(.system(size: 14, weight: .medium))
-//                        .foregroundColor(.red)
-//                }
-//                .padding()
-//                .background(Color.red.opacity(0.1))
-//                .cornerRadius(12)
-//            }
-//            
-//            Button {
-//                submitRequest()
-//            } label: {
-//                HStack {
-//                    if isSubmitting {
-//                        ProgressView()
-//                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
-//                    } else {
-//                        Text("تأكيد طلب التواصل")
-//                            .font(.system(size: 18, weight: .semibold))
-//                    }
-//                }
-//                .foregroundColor(.white)
-//                .frame(maxWidth: .infinity)
-//                .frame(height: 56)
-//                .background(
-//                    LinearGradient(
-//                        colors: [Color(hex: "0D189F"), Color(hex: "0A1280")],
-//                        startPoint: .topLeading,
-//                        endPoint: .bottomTrailing
-//                    )
-//                )
-//                .cornerRadius(16)
-//            }
-//            .disabled(isSubmitting)
-//            .padding(.horizontal, 24)
-//            .padding(.bottom, 32)
-//        }
-//        .padding(.bottom, 16)
-//        .frame(maxWidth: .infinity)
-//        .background(
-//            Color(hex: "DDE8FD")
-//                .ignoresSafeArea(edges: .bottom)
-//        )
-//        .environment(\.layoutDirection, .rightToLeft)
-//    }
-//    
-//    private func submitRequest() {
-//        isSubmitting = true
-//        viewModel.errorMessage = nil
-//        
-//        viewModel.requestAppointment(for: translator) { success in
-//            isSubmitting = false
-//            
-//            if success {
-//                withAnimation {
-//                    showSuccessMessage = true
-//                }
-//                
-//                DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-//                    dismiss()
-//                }
-//            }
-//        }
-//    }
-//}
-
-
 import SwiftUI
-
-// RequistSheetV5.swift
-// تصميم واضح كملف شخصي — سهل القراءة للمستخدم الصم
-// مزيج بين عناصر قائمة (قابلة للقراءة بسرعة) ونصوص وصفية
-// المحافظة على نفس الـlogic: شروط عرض career، استدعاء viewModel.requestAppointment(for:), رسائل النجاح/الخطأ، وإغلاق بعدها 5 ثواني.
 
 struct RequistSheet: View {
     let translator: TranslatorData
     @ObservedObject var viewModel: TranslationViewModel
-    @Environment(\ .dismiss) var dismiss
+    @Environment(\.dismiss) var dismiss
 
     // حالة الواجهة
     @State private var showSuccessMessage = false
@@ -235,46 +30,22 @@ struct RequistSheet: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 12) {
-                // Header صغير مع مقبض سحب وزر إغلاق
-                header
-
+                Spacer()
                 // بطاقة المعلومات البيضاء
                 card
 
-                Spacer(minLength: 10)
+                Spacer(minLength: 5)
 
                 // زري التأكيد والإلغاء
                 ctaArea
             }
-            .padding(.top, 6)
+            .padding(.top, 98)
             .environment(\.layoutDirection, .rightToLeft)
             .onAppear {
                 withAnimation(.spring(response: 0.45, dampingFraction: 0.78)) {
                     appear = true
                 }
             }
-        }
-    }
-
-    // MARK: - Header
-    private var header: some View {
-        HStack {
-            Spacer()
-            Capsule()
-                .fill(Color.gray.opacity(0.35))
-                .frame(width: 80, height: 6)
-                .padding(.vertical, 10)
-            Spacer()
-            Button(action: { dismiss() }) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(Color.primary)
-                    .frame(width: 36, height: 36)
-                    .background(Color.white)
-                    .clipShape(Circle())
-                    .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 4)
-            }
-            .padding(.trailing, Layout.horizontalPadding / 2)
         }
     }
 
@@ -293,45 +64,32 @@ struct RequistSheet: View {
                         .foregroundColor(Color(hex: "0B1B47"))
                         .lineLimit(1)
 
-                    // وصف سريع قابل للقراءة (نص رئيسي)
-                    Text(shortDescription)
-                        .font(.system(size: Layout.bodySize))
-                        .foregroundColor(Color(hex: "374151"))
-                        .lineLimit(3)
+                    // يمين: سعر واضح رأسياً
+                    VStack(alignment: .trailing, spacing: 6) {
+                        HStack(spacing: 6) {
+                            Text(translator.price)
+                                .font(.system(size: 22, weight: .bold))
+                                .foregroundColor(Color(hex: "0D189F"))
+                            Image(.ريال)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 22, height: 22)
+                                
+                            Text("/ الساعة")
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                        }
+                        
+                    }
                 }
 
                 Spacer()
-
-                // يمين: سعر واضح رأسياً
-                VStack(alignment: .trailing, spacing: 6) {
-                    HStack(spacing: 6) {
-                        Text(translator.price)
-                            .font(.system(size: 22, weight: .bold))
-                            .foregroundColor(Color(hex: "0D189F"))
-                        Image(.ريال)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 22, height: 22)
-                    }
-                    Text("/ الساعة")
-                        .font(.system(size: 13))
-                        .foregroundColor(.secondary)
-                }
             }
             .padding(.horizontal, Layout.horizontalPadding)
             .padding(.top, 12)
 
             // --- قسم: معلومات سريعة على شكل قائمة (قابلة للقراءة السريعة)
             VStack(alignment: .leading, spacing: 10) {
-//                // عنوان القائمة
-//                HStack(alignment: .center, spacing: 8) {
-//                    Image(systemName: "info.circle.fill")
-//                        .font(.system(size: 16))
-//                        .foregroundColor(Color(hex: "0D189F"))
-//                    Text("معلومات سريعة")
-//                        .font(.system(size: 16, weight: .semibold))
-//                        .foregroundColor(Color(hex: "0B1B47"))
-//                }
 
                 // عناصر القائمة — بعض العناصر على شكل نص وبعضها عناصر قائمة
                 VStack(alignment: .leading, spacing: 8) {
@@ -342,21 +100,45 @@ struct RequistSheet: View {
                         quickItem(icon: "star.fill", title: translator.level)
                     }
 
-                    // عنصر كنص: المجالات (وصف أطول يُعرض كفقرة صغيرة)
+                    // المجالات
                     if shouldShowCareer {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("المجالات")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(Color(hex: "0B1B47"))
-
-                            // نص الوصف للمجالات — نعرضه كفقرة منفصلة لسهولة القراءة
-                            Text(translator.career)
-                                .font(.system(size: 14))
-                                .foregroundColor(Color(hex: "374151"))
-                                .padding(10)
-                                .background(Color(.systemGray6))
-                                .cornerRadius(10)
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "briefcase.fill")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(Color(hex: "0D189F"))
+                                
+                                Text("المجالات")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(Color(hex: "0D189F"))
+                            }
+                            
+                            // Display careers with icons
+                            VStack(alignment: .center, spacing: 6) {
+                                ForEach(getCareersList(), id: \.self) { career in
+                                    HStack(spacing: 8) {
+                                        Spacer()
+                                        Image(systemName: getCareerIcon(career))
+                                            .font(.system(size: 18, weight: .semibold))
+                                            .foregroundColor(Color(hex: "0D189F"))
+                                            .frame(width: 25, height: 25)
+                                        
+                                        Text(career)
+                                            .font(.system(size: 15))
+                                            .foregroundColor(.black)
+                                        
+                                        Spacer()
+                                    }
+                                    
+                                }
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color(hex: "F5F7FB"))
+                            .cornerRadius(8)
                         }
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
                     }
 
                 }
@@ -382,7 +164,7 @@ struct RequistSheet: View {
             // --- رسائل النجاح/الخطأ
             VStack(spacing: 8) {
                 if showSuccessMessage {
-                    banner(symbol: "checkmark.circle.fill", text: "تم إرسال الطلب بنجاح!", color: .green)
+                    banner(symbol: "checkmark.circle.fill", text: "تم إرسال طلب التواصل بنجاح!", color: .green)
                 }
                 if let error = viewModel.errorMessage {
                     banner(symbol: "exclamationmark.triangle.fill", text: error, color: .red)
@@ -392,7 +174,7 @@ struct RequistSheet: View {
             .padding(.bottom, 8)
 
         } // card VStack
-        .background(Color.white) // الكارد أبيض كما طلبت
+        .background(Color.white)
         .cornerRadius(Layout.cardCorner)
         .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 8)
         .padding(.horizontal, 12)
@@ -443,7 +225,7 @@ struct RequistSheet: View {
                 .frame(width: Layout.avatarOuter, height: Layout.avatarOuter)
 
             Group {
-                if translator.gender == "Female" {
+                if translator.gender == "أنثى" {
                     Image(.femaleIcon)
                         .resizable()
                         .renderingMode(.template)
@@ -466,16 +248,17 @@ struct RequistSheet: View {
     private func quickItem(icon: String, title: String) -> some View {
         HStack(spacing: 8) {
             Image(systemName: icon)
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(size: 15, weight: .semibold))
                 .frame(width: 28, height: 28)
                 .foregroundColor(Color(hex: "0D189F"))
 
             Text(title)
                 .font(.system(size: Layout.bodySize, weight: .semibold))
                 .foregroundColor(Color(hex: "0B1B47"))
+                .padding(.trailing, 15)
         }
         .padding(10)
-        .background(Color(.systemGray6))
+        .background(Color(hex: "F5F7FB"))
         .cornerRadius(10)
     }
 
@@ -494,19 +277,30 @@ struct RequistSheet: View {
         .cornerRadius(12)
     }
 
-    // وصف قصير تلقائي — نجمع بعض الحقول لفقرة موجزة سهلة القراءة
-    private var shortDescription: String {
-        var parts: [String] = []
-        if !translator.career.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && translator.career != "بدون" {
-            parts.append(translator.career)
-        }
-        parts.append("مستوى: \(translator.level)")
-        return parts.joined(separator: " • ")
-    }
-
     // MARK: - Logic
     private var shouldShowCareer: Bool {
         !translator.career.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && translator.career != "بدون"
+    }
+
+    // ✅ Helper Functions for Careers
+    private func getCareersList() -> [String] {
+        // Split careers by comma and trim whitespace
+        translator.career
+            .split(separator: "،")
+            .map { String($0).trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+    }
+    
+    private func getCareerIcon(_ careerName: String) -> String {
+        // Map career names to icons
+        let careerMap: [String: String] = [
+            "القانون": "hammer.circle.fill",
+            "الرعاية الصحية": "heart.circle.fill",
+            "التعليم": "book.circle.fill",
+            "العقار": "house.circle.fill",
+            "التجارة": "briefcase.circle.fill"
+        ]
+        return careerMap[careerName] ?? "briefcase.fill"
     }
 
     private func submitRequest() {
@@ -517,7 +311,7 @@ struct RequistSheet: View {
             isSubmitting = false
             if success {
                 withAnimation { showSuccessMessage = true }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 15) {
                     dismiss()
                 }
             }
@@ -532,6 +326,3 @@ struct RequistSheet: View {
         return (window?.safeAreaInsets.bottom ?? 0) > 0 ? 16 : 12
     }
 }
-
-
-

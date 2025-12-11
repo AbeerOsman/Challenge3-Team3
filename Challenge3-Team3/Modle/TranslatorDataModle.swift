@@ -1,8 +1,7 @@
 import Foundation
 import UIKit
 
-
-// MARK: - TranslatorData (مُحسّن لدعم العرض بالعربية)
+// MARK: - TranslatorData (updated to support multiple careers)
 struct TranslatorData: Identifiable {
     let id: String
     let name: String
@@ -11,14 +10,14 @@ struct TranslatorData: Identifiable {
     let level: String
     let price: String
     let category: String
-    let career: String
+    let career: String   // Display string (joined from careers array)
+    let careers: [String]  // NEW: array of careers from Firebase
     
-    // خاصية محسوبة لتحديد الحالة: متطوع أو مدفوع
+    // Computed property for display state
     var state: String {
         let cat = category.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         let p = price.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // تقبل القيم سواء بالإنجليزية أو بالعربية
         let isVolunteerCategory = ["volunteer", "متطوع", "متطوعة", "تطوع"].contains { cat.contains($0) }
         let isPaidCategory = ["paid", "مدفوع", "مدفوعة"].contains { cat.contains($0) }
         
@@ -27,7 +26,6 @@ struct TranslatorData: Identifiable {
         } else if isPaidCategory {
             return "مدفوع"
         } else {
-            // احتياطي: إذا السعر صفر أو فارغ اعتبر متطوع، وإلا اعتبر مدفوع
             if p == "0" || p.isEmpty {
                 return "متطوع"
             } else {
@@ -47,7 +45,7 @@ struct Translator: Identifiable {
     let rating: Double
     let tags: [String]
     var isAvailable: Bool
-    let career: String   // المسار المهني للعرض في الواجهة
+    let career: String
 }
 
 // MARK: - Translator level
@@ -59,7 +57,7 @@ enum TranslatorLevel: String {
     var display: String { rawValue }
 }
 
-// MARK: - حالة الموعد()
+// MARK: - Appointment Status
 enum AppointmentStatus {
     case pending
     case completed

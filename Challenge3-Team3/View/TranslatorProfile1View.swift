@@ -198,14 +198,11 @@ struct MainTranslatorProfileView: View {
                             } else {
                                 ForEach(Array(viewModel.selectedCareers).sorted { $0.rawValue < $1.rawValue }, id: \.self) { career in
                                     HStack(spacing: 8) {
-                                        Image(systemName: "briefcase.fill")
-                                            .font(.system(size: 14))
+                                        Image(systemName: career.icon)  // ✅ Uses the icon property
+                                            .font(.system(size: 14, weight: .semibold))
                                             .foregroundColor(Color(hex: "0D189F"))
                                         
                                         Text(career.rawValue)
-                                            .font(.system(size: 13))
-                                            .foregroundColor(.black)
-                                        
                                         Spacer()
                                     }
                                     .frame(maxWidth: .infinity)

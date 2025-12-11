@@ -21,8 +21,9 @@ enum Plan: String, CaseIterable, Identifiable, Codable {
     var id: String { rawValue }
 }
 
+// MARK: - Career with Icons
 enum Career: String, CaseIterable, Identifiable, Codable, Hashable {
-    case none = "عام"
+    case none = "بدون"
     case law = "القانون"
     case healthcare = "الرعاية الصحية"
     case education = "التعليم"
@@ -30,6 +31,24 @@ enum Career: String, CaseIterable, Identifiable, Codable, Hashable {
     case business = "التجارة"
 
     var id: String { rawValue }
+    
+    // ✅ Icon for each career
+    var icon: String {
+        switch self {
+        case .none:
+            return "questionmark.circle"
+        case .law:
+            return "hammer.circle.fill"
+        case .healthcare:
+            return "heart.circle.fill"
+        case .education:
+            return "studentdesk"
+        case .engneering:
+            return "house.circle.fill"
+        case .business:
+            return "briefcase.circle.fill"
+        }
+    }
 }
 
 // MARK: - Arabic utilities

@@ -230,6 +230,7 @@ struct TranslatorProfileView: View {
                     }
                     .padding(.horizontal)
                     .padding(.bottom, 24)
+                    
                 }
                 .padding(.top, 16)
             }
