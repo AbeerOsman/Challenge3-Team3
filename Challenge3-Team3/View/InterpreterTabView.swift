@@ -3,6 +3,7 @@ import SwiftUI
 struct InterpreterTabView: View {
     @EnvironmentObject private var appStateManager: AppStateManager
     @EnvironmentObject private var authViewModel: AuthViewModel
+    @StateObject private var viewModel = TranslationViewModel()
     
     var body: some View {
         TabView {
@@ -14,7 +15,7 @@ struct InterpreterTabView: View {
                 }
 
             // Messages Tab
-            MessagesView()
+            MessagesView(viewModel: viewModel)
                 .tabItem {
                     Image(systemName: "bubble.left.and.bubble.right")
                     Text("الرسائل")

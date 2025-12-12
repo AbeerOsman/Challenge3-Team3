@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 // MARK: - TranslatorData (updated to support multiple careers)
-struct TranslatorData: Identifiable {
+struct TranslatorData: Identifiable, Codable, Equatable {
     let id: String
     let name: String
     let gender: String

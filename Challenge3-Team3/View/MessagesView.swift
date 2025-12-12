@@ -1,51 +1,22 @@
 import SwiftUI
 
 struct MessagesView: View {
+    @ObservedObject var viewModel: TranslationViewModel
     
-    // Dummy conversations using the SAME fields as Message model
-    let dummyMessages: [Message] = [
-        Message(
-            text: "Thank you so much!",
-            senderId: "user001",
-            senderName: "Sarah Ahmed",
-            timestamp: Date()
-        ),
-        Message(
-            text: "When can we start?",
-            senderId: "user002",
-            senderName: "Mohammed Ali",
-            timestamp: Calendar.current.date(byAdding: .day, value: -1, to: Date()) ?? Date()
-        ),
-        Message(
-            text: "Sure, I understand.",
-            senderId: "user003",
-            senderName: "Aisha Saleh",
-            timestamp: Calendar.current.date(byAdding: .day, value: -2, to: Date()) ?? Date()
-        )
-    ]
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         ZStack {
-            // subtle two-tone background
-            LinearGradient(gradient: Gradient(colors: [Color(hex: "F7F9FF"), Color(hex: "F2F6FF")]),
-                           startPoint: .topLeading, endPoint: .bottomTrailing)
+            LinearGradient(
+                gradient: Gradient(colors: [Color(hex: "F7F9FF"), Color(hex: "F2F6FF")]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                
-                // MARK: - Header
-                HStack {
-                    Text("Messages")
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundColor(.black)
-                    Spacer()
-                }
-                .padding()
-                
-                Divider()
-                
                 // MARK: - Empty State
-                if dummyMessages.isEmpty {
+                if viewModel.conversations.isEmpty {
                     
                     Spacer()
                     
@@ -55,54 +26,85 @@ struct MessagesView: View {
                         .frame(width: 55, height: 55)
                         .foregroundColor(.gray.opacity(0.7))
                     
-                    Text("No messages available")
+                    Text("لا توجد محادثات")
                         .font(.system(size: 18, weight: .medium))
                         .foregroundColor(.gray)
+                    
+                    Text("ابدأ محادثة مع مترجم من الصفحة الرئيسية")
+                        .font(.system(size: 14))
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 4)
+                        .padding(.horizontal, 40)
                     
                     Spacer()
                     
                 } else {
                     
                     // MARK: - List of message threads
-                    List(dummyMessages) { message in
+                    List(viewModel.conversations) { conversation in
                         NavigationLink {
                             LiveChatView(
-                                currentUserId: "currentUser123",
-                                currentUserName: "Me",
-                                recipientUserId: message.senderId,
-                                recipientName: message.senderName,
+                                currentUserId: viewModel.deafUserId,
+                                currentUserName: viewModel.deafName,
+                                recipientUserId: conversation.translatorId,
+                                recipientName: conversation.translatorName,
                                 recipientContact: "0000000000"
                             )
                         } label: {
                             HStack(spacing: 12) {
                                 
-                                Image(systemName: "person.crop.circle.fill")
-                                    .font(.system(size: 40))
-                                    .foregroundColor(.primary1)
+                                // Avatar
+                                Circle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [Color(hex: "0D189F"), Color(hex: "0A1280")],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .frame(width: 50, height: 50)
+                                    .overlay(
+                                        Text(String(conversation.translatorName.prefix(1)))
+                                            .font(.system(size: 20, weight: .bold))
+                                            .foregroundColor(.white)
+                                    )
                                 
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(message.senderName)
+                                VStack(alignment: .trailing, spacing: 4) {
+                                    Text(conversation.translatorName)
                                         .font(.system(size: 16, weight: .semibold))
+                                        .frame(maxWidth: .infinity, alignment: .trailing)
                                     
-                                    Text(message.text)
+                                    Text(conversation.lastMessage)
                                         .font(.system(size: 14))
                                         .foregroundColor(.gray)
                                         .lineLimit(1)
+                                        .frame(maxWidth: .infinity, alignment: .trailing)
                                 }
                                 
                                 Spacer()
                                 
-                                Text(formattedTime(message.timestamp))
+                                Text(formattedTime(conversation.timestamp))
                                     .font(.system(size: 12))
                                     .foregroundColor(.gray)
                             }
                             .padding(.vertical, 8)
                         }
+                        
+                        .listRowBackground(Color.clear)
                     }
                     .listStyle(.plain)
-                }
+                    .scrollContentBackground(.hidden)                }
             }
-            .navigationBarBackButtonHidden(false)
+            .environment(\.layoutDirection, .rightToLeft)
+        }
+        .navigationTitle("الرسائل")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.hidden, for: .navigationBar)
+        .onAppear {
+            if viewModel.openChatWith != nil {
+                viewModel.openChatWith = nil
+            }
         }
     }
     
@@ -112,12 +114,14 @@ struct MessagesView: View {
         formatter.dateStyle = .short
         formatter.timeStyle = .short
         formatter.doesRelativeDateFormatting = true
+        formatter.locale = Locale(identifier: "ar")
         return formatter.string(from: date)
     }
 }
 
 #Preview {
     NavigationStack {
-        MessagesView()
+        MessagesView(viewModel: TranslationViewModel())
+            .environment(\.layoutDirection, .rightToLeft)
     }
 }

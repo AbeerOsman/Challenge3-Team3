@@ -4,9 +4,7 @@
 //
 //  Created by Abeer Jeilani Osman  on 04/06/1447 AH.
 //
-
 import SwiftUI
-
 struct AllTranslatorsView: View {
     @ObservedObject var viewModel: TranslationViewModel
     @Environment(\.scenePhase) var scenePhase
@@ -40,7 +38,6 @@ struct AllTranslatorsView: View {
         }
     }
 }
-
 // MARK: - Translator Cards View (Show ALL translators)
 struct TranslatorCardsView: View {
     @ObservedObject var viewModel: TranslationViewModel
@@ -137,10 +134,8 @@ struct TranslatorCardsView: View {
         }
     }
 }
-
 struct LevelFilterView: View {
     @ObservedObject var viewModel: TranslationViewModel
-
     var body: some View {
         VStack(alignment: .trailing, spacing: 12) {
             Text("اختر المستوى")
@@ -148,7 +143,6 @@ struct LevelFilterView: View {
                 .foregroundColor(.black)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .multilineTextAlignment(.leading)
-
             HStack(spacing: 8) {
                 FilterButton(
                     title: "مبتدئ",
@@ -160,7 +154,6 @@ struct LevelFilterView: View {
                         viewModel.filterByLevel(.beginner)
                     }
                 }
-
                 FilterButton(
                     title: "متوسط",
                     isSelected: viewModel.selectedLevel == .intermediate
@@ -171,7 +164,6 @@ struct LevelFilterView: View {
                         viewModel.filterByLevel(.intermediate)
                     }
                 }
-
                 FilterButton(
                     title: "متقدم",
                     isSelected: viewModel.selectedLevel == .advanced
@@ -187,7 +179,6 @@ struct LevelFilterView: View {
         }
     }
 }
-
 // MARK: - Filter Button
 struct FilterButton: View {
     let title: String
@@ -210,12 +201,11 @@ struct FilterButton: View {
         }
     }
 }
-
-
 #Preview {
     NavigationStack {
         AllTranslatorsView(viewModel: TranslationViewModel())
             .environmentObject(TranslationViewModel())
-            .environment(\.layoutDirection, .rightToLeft)
+            .environment(\.layoutDirection, .rightToLeft
+            )
     }
 }
