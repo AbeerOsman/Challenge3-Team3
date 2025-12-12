@@ -76,12 +76,13 @@ struct DeafHome: View {
                     } label: {
                         
                         RoundedRectangle(cornerRadius: 16)
-                            .fill(LinearGradient(gradient: Gradient(colors: [Color(hex: "0D189F"), Color(hex: "0A1280")]), startPoint: .topLeading, endPoint: .bottomTrailing))
+//                            .fill(LinearGradient(gradient: Gradient(colors: [Color(hex: "0D189F"), Color(hex: "0A1280")]), startPoint: .topLeading, endPoint: .bottomTrailing))
+                            .fill(.red)
                             .frame(width: 64, height: 64)
                             .shadow(color: Color(hex: "0D189F").opacity(0.22), radius: 14, x: 0, y: 8)
                             .overlay(
                                 VStack(spacing: 0) {
-                                    Image(systemName: "info.circle")
+                                    Image(systemName: "sos")
                                         .font(.system(size: 24))
                                         .foregroundColor(.white)
                                 }
@@ -142,7 +143,7 @@ struct HeaderView: View {
                     .font(.system(size: 19, weight: .regular))
                     .foregroundColor(Color(hex: "666666"))
                 
-                Text(deafName.isEmpty ? "" : deafName)
+                Text(deafName.isEmpty ? "" : "👋🏼 \(deafName)")
                     .font(.system(size: 19, weight: .semibold))
                     .foregroundColor(Color(hex: "0B1A66"))
             }
@@ -342,135 +343,147 @@ struct AppointmentCard: View {
     let translator: TranslatorData
     @ObservedObject var viewModel: TranslationViewModel
     @State private var pressed = false
+    @State private var showTranslatorInfo = false
 
     var body: some View {
-        HStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 12) {
-                    if translator.gender == "Female" {
-                        Image("femaleIcon")
-                            .resizable()
-                            .renderingMode(.template)
-                            .scaledToFit()
-                            .frame(width: 53, height: 53)
-                            .foregroundColor(Color(hex: "DC7F7F"))
-                    } else {
-                        Image("maleIcon")
-                            .resizable()
-                            .renderingMode(.template)
-                            .scaledToFit()
-                            .frame(width: 48, height: 48)
-                            .foregroundColor(Color(hex: "092B6F"))
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(translator.name)
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(Color(hex: "1A1A1A"))
-                            .lineLimit(2)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .layoutPriority(1)
+        ZStack {
+            HStack(spacing: 0) {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 12) {
+                        if translator.gender == "Female" {
+                            Image("femaleIcon")
+                                .resizable()
+                                .renderingMode(.template)
+                                .scaledToFit()
+                                .frame(width: 53, height: 53)
+                                .foregroundColor(Color(hex: "DC7F7F"))
+                        } else {
+                            Image("maleIcon")
+                                .resizable()
+                                .renderingMode(.template)
+                                .scaledToFit()
+                                .frame(width: 48, height: 48)
+                                .foregroundColor(Color(hex: "092B6F"))
+                        }
                         
-                        HStack(spacing: 6) {
-                            Circle()
-                                .fill(translator.category == "متطوع" ? Color(hex: "5CB853") : Color(hex: "EBA0A0"))
-                                .frame(width: 6, height: 6)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(translator.name)
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(Color(hex: "1A1A1A"))
+                                .lineLimit(2)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .layoutPriority(1)
                             
-                            Text(translator.category == "متطوع" ? "متطوع" : "مدفوع")
-                                .font(.system(size: 13, weight: .medium))
-                                .foregroundColor(translator.category == "متطوع" ? Color(hex: "5CB853") : Color(hex: "EBA0A0"))
+                            HStack(spacing: 6) {
+                                Circle()
+                                    .fill(translator.category == "متطوع" ? Color(hex: "5CB853") : Color(hex: "EBA0A0"))
+                                    .frame(width: 6, height: 6)
+                                
+                                Text(translator.category == "متطوع" ? "متطوع" : "مدفوع")
+                                    .font(.system(size: 13, weight: .medium))
+                                    .foregroundColor(translator.category == "متطوع" ? Color(hex: "5CB853") : Color(hex: "EBA0A0"))
+                            }
                         }
                     }
-                }
-                
-                HStack(spacing: 8) {
-                    TagView(text: translator.age, icon: "calendar")
-                    TagView(text: translator.level, icon: "star.fill")
-                }
-            }
-            .padding(.leading, CardSpacing.horizontalPadding)
-            .padding(.trailing, CardSpacing.horizontalPadding / 2)
-            
-            Rectangle()
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color(hex: "E0E0E0").opacity(0.3),
-                            Color(hex: "E0E0E0"),
-                            Color(hex: "E0E0E0").opacity(0.3)
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-                .frame(width: 1, height: CardSpacing.dividerHeight)
-            
-            VStack(spacing: 8) {
-                VStack(spacing: 2) {
-                    HStack(spacing: 4) {
-                        Text(translator.price)
-                            .font(.system(size: 28, weight: .bold))
-                            .foregroundColor(Color(hex: "0D189F"))
-                        
-                        Image(.ريال)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 22, height: 22)
-                    }
                     
-                    Text("لكل ساعة")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(Color(hex: "9E9E9E"))
+                    HStack(spacing: 8) {
+                        TagView(text: translator.age, icon: "calendar", isLevelTag: false)
+                        TagView(text: translator.level, icon: "star.fill", isLevelTag: true)
+                    }
                 }
+                .padding(.leading, CardSpacing.horizontalPadding)
+                .padding(.trailing, CardSpacing.horizontalPadding / 2)
                 
-                Button {
-                    if let appointmentId = appointment.id {
-                        print("Cancel button pressed for: \(appointmentId)")
-                        viewModel.cancelAppointment(appointmentId: appointmentId)
-                    } else {
-                        print("Appointment ID is nil!")
-                    }
-                } label: {
-                    HStack {
-                        Image(systemName: "xmark.circle.fill")
-                        Text("إلغاء")
-                    }
-                    .foregroundColor(.white)
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(width: 110, height: 42)
-                    .background(
+                Rectangle()
+                    .fill(
                         LinearGradient(
-                            colors: [Color.red, Color.red.opacity(0.8)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+                            colors: [
+                                Color(hex: "E0E0E0").opacity(0.3),
+                                Color(hex: "E0E0E0"),
+                                Color(hex: "E0E0E0").opacity(0.3)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
                         )
                     )
-                    .cornerRadius(14)
-                    .shadow(color: Color.red.opacity(0.3), radius: 8, x: 0, y: 4)
+                    .frame(width: 1, height: CardSpacing.dividerHeight)
+                
+                VStack(spacing: 8) {
+                    VStack(spacing: 2) {
+                        HStack(spacing: 4) {
+                            Text(translator.price)
+                                .font(.system(size: 28, weight: .bold))
+                                .foregroundColor(Color(hex: "0D189F"))
+                            
+                            Image(.ريال)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 22, height: 22)
+                        }
+                        
+                        Text("لكل ساعة")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(Color(hex: "9E9E9E"))
+                    }
+                    
+                    Button {
+                        if let appointmentId = appointment.id {
+                            print("Cancel button pressed for: \(appointmentId)")
+                            viewModel.cancelAppointment(appointmentId: appointmentId)
+                        } else {
+                            print("Appointment ID is nil!")
+                        }
+                    } label: {
+                        HStack {
+                            Image(systemName: "xmark.circle.fill")
+                            Text("إلغاء")
+                        }
+                        .foregroundColor(.white)
+                        .font(.system(size: 14, weight: .semibold))
+                        .frame(width: 110, height: 42)
+                        .background(
+                            LinearGradient(
+                                colors: [Color.red, Color.red.opacity(0.8)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .cornerRadius(14)
+                        .shadow(color: Color.red.opacity(0.3), radius: 8, x: 0, y: 4)
+                    }
+                }
+                .frame(minWidth: 120, alignment: .trailing)
+                .padding(.trailing, CardSpacing.horizontalPadding)
+                .padding(.leading, CardSpacing.horizontalPadding / 2)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: CardSpacing.cardHeight)
+            .background(
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(Color.white)
+                    .shadow(color: .black.opacity(0.04), radius: 12, x: 0, y: 4)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24)
+                            .stroke(Color(hex: "F5F5F5"), lineWidth: 1)
+                    )
+            )
+            .padding(.vertical, CardSpacing.verticalPadding)
+            .scaleEffect(pressed ? 0.995 : 1.0)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    pressed = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                        pressed = false
+                        showTranslatorInfo = true
+                    }
                 }
             }
-            .frame(minWidth: 120, alignment: .trailing)
-            .padding(.trailing, CardSpacing.horizontalPadding)
-            .padding(.leading, CardSpacing.horizontalPadding / 2)
         }
-        .frame(maxWidth: .infinity)
-        .frame(height: CardSpacing.cardHeight)
-        .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(Color.white)
-                .shadow(color: .black.opacity(0.04), radius: 12, x: 0, y: 4)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 24)
-                        .stroke(Color(hex: "F5F5F5"), lineWidth: 1)
-                )
-        )
-        .padding(.vertical, CardSpacing.verticalPadding)
-        .scaleEffect(pressed ? 0.995 : 1.0)
-        .onTapGesture {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                pressed.toggle()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) { pressed = false }
-            }
+        .sheet(isPresented: $showTranslatorInfo) {
+            TranslatorInfo(translator: translator, viewModel: viewModel)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
     }
 }
@@ -526,6 +539,8 @@ struct DeletedTranslatorCard: View {
             .frame(minWidth: 120, alignment: .trailing)
             .padding(.trailing, CardSpacing.horizontalPadding)
             .padding(.leading, CardSpacing.horizontalPadding / 2)
+            
+            
         }
         .frame(maxWidth: .infinity)
         .frame(height: CardSpacing.cardHeight)
@@ -599,8 +614,8 @@ struct TranslatorCard: View {
                 }
                 
                 HStack(spacing: 8) {
-                    TagView(text: translator.age, icon: "calendar")
-                    TagView(text: translator.level, icon: "star.fill")
+                    TagView(text: translator.age, icon: "calendar", isLevelTag: false)
+                    TagView(text: translator.level, icon: "star.fill", isLevelTag: true)
                 }
             }
             .padding(.leading, CardSpacing.horizontalPadding)
@@ -709,31 +724,87 @@ struct TranslatorCard: View {
     }
 }
 
-// MARK: - Tag View (same name)
+// MARK: - Tag View
 struct TagView: View {
     let text: String
     let icon: String
+    var isLevelTag: Bool = false
     
     var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.system(size: 11, weight: .medium))
-                .foregroundColor(Color(hex: "666666"))
-            
-            Text(text)
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(Color(hex: "666666"))
+        if isLevelTag {
+            // Stars view for level
+            HStack(spacing: 4) {
+                HStack(spacing: 2) {
+                    ForEach(0..<3, id: \.self) { index in
+                        Image(systemName: "star.fill")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(
+                                index < levelToStars(text)
+                                    ? Color(hex: "9F610D")
+                                    : Color(hex: "E0E0E0")
+                            )
+                    }
+                }
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color(hex: "F8F8F8"))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color(hex: "EEEEEE"), lineWidth: 1)
+                    )
+            )
+        } else {
+            // Original text view for age
+            HStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(Color(hex: "666666"))
+                
+                Text(text)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(Color(hex: "666666"))
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color(hex: "F8F8F8"))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color(hex: "EEEEEE"), lineWidth: 1)
+                    )
+            )
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color(hex: "F8F8F8"))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color(hex: "EEEEEE"), lineWidth: 1)
-                )
-        )
+    }
+    
+    // Helper function to convert level text to star count
+    private func levelToStars(_ level: String) -> Int {
+        let cleanLevel = level.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Arabic - exact matching
+        if cleanLevel == "متقدم" {
+            return 3
+        } else if cleanLevel == "متوسط" {
+            return 2
+        } else if cleanLevel == "مبتدا" || cleanLevel == "مبتدئ" {
+            return 1
+        }
+        
+        // English fallback
+        let lowerLevel = cleanLevel.lowercased()
+        if lowerLevel.contains("advanced") || lowerLevel.contains("expert") {
+            return 3
+        } else if lowerLevel.contains("intermediate") || lowerLevel.contains("medium") {
+            return 2
+        } else if lowerLevel.contains("beginner") || lowerLevel.contains("basic") {
+            return 1
+        }
+        
+        // Default
+        return 0
     }
 }
 

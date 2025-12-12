@@ -1,6 +1,15 @@
+//
+//  TranslatorInfo.swift
+//  Challenge3-Team3
+//
+//  Created by Abeer Jeilani Osman  on 21/06/1447 AH.
+//
+
 import SwiftUI
 
-struct RequistSheet: View {
+import SwiftUI
+
+struct TranslatorInfo: View {
     let translator: TranslatorData
     @ObservedObject var viewModel: TranslationViewModel
     @Environment(\.dismiss) var dismiss
@@ -92,9 +101,8 @@ struct RequistSheet: View {
             VStack(alignment: .leading, spacing: 10) {
 
                 // عناصر القائمة — بعض العناصر على شكل نص وبعضها عناصر قائمة
-                VStack(alignment: .center, spacing: 8) {
+                VStack(alignment: .leading, spacing: 8) {
                     // عنصر: الجنس و العمر (قائمة موجزة)
-                    
                     HStack(spacing: 8) {
                         quickItem(icon: "person.fill", title: translator.gender == "أنثى" ? "أنثى" : "ذكر")
                         quickItem(icon: "calendar", title: translator.age)
@@ -184,25 +192,6 @@ struct RequistSheet: View {
     // MARK: - CTA Area
     private var ctaArea: some View {
         VStack(spacing: 12) {
-            Button(action: { submitRequest() }) {
-                HStack {
-                    if isSubmitting {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                    } else {
-                        Text("تأكيد طلب التواصل")
-                            .font(.system(size: 17, weight: .semibold))
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .frame(height: Layout.ctaHeight)
-                .background(LinearGradient(gradient: Gradient(colors: [Color(hex: "0D189F"), Color(hex: "0A1280")]), startPoint: .leading, endPoint: .trailing))
-                .foregroundColor(.white)
-                .cornerRadius(12)
-            }
-            .disabled(isSubmitting)
-            .padding(.horizontal, Layout.horizontalPadding)
-
             Button(action: { dismiss() }) {
                 Text("إلغاء")
                     .font(.system(size: 15, weight: .medium))
@@ -371,3 +360,4 @@ struct RequistSheet: View {
         return (window?.safeAreaInsets.bottom ?? 0) > 0 ? 16 : 12
     }
 }
+

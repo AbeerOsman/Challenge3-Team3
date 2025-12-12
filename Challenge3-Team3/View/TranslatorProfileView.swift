@@ -21,6 +21,7 @@ struct TranslatorProfileView: View {
 
             ScrollView {
                 VStack(spacing: 16) {
+                    Spacer()
                     inputCard {
                         VStack(alignment: .trailing, spacing: 12) {
 
@@ -244,7 +245,7 @@ struct TranslatorProfileView: View {
                 }
             }
         }
-        .navigationTitle("الملف الشخصي")
+        .navigationTitle("تعديل الملف الشخصي")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
