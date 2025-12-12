@@ -1,104 +1,107 @@
 import Foundation
 import Combine
 
+// MARK: - Conversation Model
+struct Conversation: Identifiable {
+    let id: String
+    let translatorId: String
+    let translatorName: String
+    let lastMessage: String
+    let timestamp: Date
+    
+    init(translatorId: String,
+         translatorName: String,
+         lastMessage: String = "تم إنشاء المحادثة",
+         timestamp: Date = Date()) {
+        self.id = UUID().uuidString
+        self.translatorId = translatorId
+        self.translatorName = translatorName
+        self.lastMessage = lastMessage
+        self.timestamp = timestamp
+    }
+}
+
+// MARK: - Translation ViewModel
 class TranslationViewModel: ObservableObject {
+    @Published var openChatWith: TranslatorData? = nil
     @Published var selectedLevel: TranslatorLevel? = nil
     @Published var allTranslators: [TranslatorData] = [] {
         didSet { matchAppointmentsWithTranslators() }
     }
-
-    @Published var translators: [TranslatorData] = []   // used ONLY for displaying/filtering
+    @Published var translators: [TranslatorData] = []   // For displaying/filtering
     @Published var appointments: [AppointmentRequest] = []
     @Published var appointmentsWithTranslators: [AppointmentWithTranslator] = []
+    @Published var conversations: [Conversation] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
     
     var deafUserId: String = ""
     var deafName: String = ""
     
-    init() {
-        print(" TranslationViewModel initialized")
-        fetchTranslators()
-    }
+//    init() {
+//        print("🎬 TranslationViewModel initialized")
+//        fetchTranslators()
+//    }
     
+    // MARK: - Set current deaf user
     func setDeafUser(userId: String, name: String) {
-        print(" Setting deaf user: \(name) (ID: \(userId))")
+        print("👤 Setting deaf user: \(name) (ID: \(userId))")
         self.deafUserId = userId
         self.deafName = name
         fetchUserAppointments()
     }
     
+    // MARK: - Fetch Translators
     func fetchTranslators() {
-        print(" fetchTranslators() called")
+        print("🚀 fetchTranslators() called")
         isLoading = true
         errorMessage = nil
-
+        
         FirebaseService.shared.fetchTranslators { [weak self] result in
             DispatchQueue.main.async {
-                // unwrap weak self once and use `self` safely below
                 guard let self = self else { return }
-
-                print("📲 Returning to main thread")
                 self.isLoading = false
-
+                
                 switch result {
                 case .success(let translators):
-                    print("✅ SUCCESS: Received \(translators.count) translators")
-                    // store full list in allTranslators (triggers didSet -> rematch)
+                    print("✅ Received \(translators.count) translators")
                     self.allTranslators = translators
-
-                    // if user hasn't applied any filter, keep UI list in sync
                     if self.selectedLevel == nil {
                         self.translators = translators
                     } else if let level = self.selectedLevel {
-                        // if a level filter is already active, apply it locally
                         self.translators = translators.filter { $0.level == level.rawValue }
                     }
-
+                    
                 case .failure(let error):
-                    print("❌ FAILURE: \(error.localizedDescription)")
+                    print("❌ Failure: \(error.localizedDescription)")
                     self.errorMessage = error.localizedDescription
                 }
             }
         }
     }
-
     
+    // MARK: - Filter by level
     func filterByLevel(_ level: TranslatorLevel) {
         print("🔍 Filtering by level: \(level.rawValue)")
         selectedLevel = level
-        isLoading = false
-        errorMessage = nil
-        
-        // ✨ FIXED: Filter from allTranslators (the full unfiltered list)
         translators = allTranslators.filter { $0.level == level.rawValue }
-        
-        print("✅ Filtered locally: Found \(translators.count) translators with level: \(level.rawValue)")
     }
     
     func clearFilter() {
-        print("🔄 Clearing filter")
         selectedLevel = nil
         translators = allTranslators
     }
-
     
+    // MARK: - Fetch appointments
     func fetchUserAppointments() {
-        guard !deafUserId.isEmpty else {
-            print("⚠️ No user ID set - skipping appointment fetch")
-            return
-        }
-        
-        print("📥 Setting up appointments listener for user: \(deafUserId)")
+        guard !deafUserId.isEmpty else { return }
         
         FirebaseService.shared.fetchUserAppointments(userId: deafUserId) { [weak self] result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let appointments):
-                    print("✅ Appointments listener fired! Received \(appointments.count) appointments")
                     self?.appointments = appointments
-                    self?.matchAppointmentsWithTranslators()  // ✨ Match with translators
-                    
+                    self?.matchAppointmentsWithTranslators()
                 case .failure(let error):
                     print("❌ Error loading appointments: \(error.localizedDescription)")
                 }
@@ -106,94 +109,45 @@ class TranslationViewModel: ObservableObject {
         }
     }
     
-    // ✨ NEW: Match appointments with current translator data
+    // MARK: - Match appointments with translators
     private func matchAppointmentsWithTranslators() {
-        print("🔗 Matching appointments with translators...")
-        print("   Total appointments: \(appointments.count)")
-        print("   Total allTranslators: \(allTranslators.count)")
-
-        // Use the master unfiltered list `allTranslators` for matching
         appointmentsWithTranslators = appointments.map { appointment in
-            // NOTE: correct property name is `translatorId` (camelCase)
             let translator = allTranslators.first { $0.id == appointment.translatorId }
-
-            if translator != nil {
-                print("✅ Found translator: \(translator!.name) for appointment")
-            } else {
-                print("⚠️ No translator found for ID: \(appointment.translatorId)")
-            }
-
-            return AppointmentWithTranslator(
-                appointment: appointment,
-                translator: translator
-            )
+            return AppointmentWithTranslator(appointment: appointment, translator: translator)
         }
-
-        print("✅ Created \(appointmentsWithTranslators.count) matched appointments")
     }
     
-    // ✨ Public method to force re-match (called after Firebase updates)
     func forceRematchAppointments() {
-        print("🔄 Force re-matching appointments...")
         matchAppointmentsWithTranslators()
     }
-
-
     
+    // MARK: - Request Appointment & Create Conversation
     func requestAppointment(for translator: TranslatorData, completion: @escaping (Bool) -> Void) {
-        print("📝 Request appointment called")
-        print("   Translator: \(translator.name)")
-        print("   User ID: \(deafUserId)")
-        print("   User Name: \(deafName)")
-        
         guard !deafUserId.isEmpty else {
-            print("❌ No user ID set")
             errorMessage = "User not logged in"
             completion(false)
             return
         }
         
-        guard !deafName.isEmpty else {
-            print("❌ No user name set")
-            errorMessage = "User name is missing"
-            completion(false)
-            return
-        }
-        
         if appointments.contains(where: { $0.translatorId == translator.id }) {
-            print("⚠️ Appointment already exists")
             errorMessage = "You already have a request with this translator"
             completion(false)
             return
         }
         
-        print("📤 Sending appointment to Firebase...")
-        
         FirebaseService.shared.createAppointment(
             deafUserId: deafUserId,
             deafName: deafName,
-            translatorId: translator.id  // ✨ Only pass ID
+            translatorId: translator.id
         ) { [weak self] result in
             DispatchQueue.main.async {
                 switch result {
                 case .success:
-                    print("✅ Appointment created successfully")
-                    self?.errorMessage = nil
-                    
-                    // ✨ CRITICAL: Refresh translator data and force re-match
-                    print("🔄 Refreshing translator data...")
                     self?.fetchTranslators()
-                    
-                    // ✨ Also force re-match after a small delay to ensure data is loaded
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        print("🔄 Force re-matching appointments...")
-                        self?.forceRematchAppointments()
-                    }
-                    
+                    self?.createConversation(with: translator)
+                    self?.openChatWith = translator
                     completion(true)
-                    
                 case .failure(let error):
-                    print("❌ Error creating appointment: \(error.localizedDescription)")
                     self?.errorMessage = "Failed to create appointment: \(error.localizedDescription)"
                     completion(false)
                 }
@@ -201,37 +155,47 @@ class TranslationViewModel: ObservableObject {
         }
     }
     
+    func createConversation(with translator: TranslatorData) {
+        if conversations.contains(where: { $0.translatorId == translator.id }) { return }
+        let newChat = Conversation(translatorId: translator.id, translatorName: translator.name)
+        conversations.append(newChat)
+    }
+    
+    // MARK: - Cancel Appointment
     func cancelAppointment(appointmentId: String) {
-        print("❌ Canceling appointment: \(appointmentId)")
-        
-        FirebaseService.shared.deleteAppointment(appointmentId: appointmentId) { [weak self] result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success:
-                    print("✅ Appointment canceled successfully")
-                    self?.errorMessage = nil
-                    
-                    // ✨ Refresh translator data and force re-match
-                    print("🔄 Refreshing translator data after cancellation...")
-                    self?.fetchTranslators()
-                    
-                    // ✨ Force re-match after a small delay
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        print("🔄 Force re-matching appointments after cancellation...")
+        // Find the translator ID before deleting
+        if let appointment = appointments.first(where: { $0.id == appointmentId }) {
+            let translatorId = appointment.translatorId
+            
+            FirebaseService.shared.deleteAppointment(appointmentId: appointmentId) { [weak self] result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success:
+                        print("✅ Appointment cancelled successfully")
+                        // Remove the conversation associated with this translator
+                        self?.removeConversation(translatorId: translatorId)
+                        
+                        // Refresh data
+                        self?.fetchUserAppointments()
                         self?.forceRematchAppointments()
+                        
+                    case .failure(let error):
+                        self?.errorMessage = "Failed to cancel appointment: \(error.localizedDescription)"
                     }
-                    
-                case .failure(let error):
-                    print("❌ Error canceling: \(error.localizedDescription)")
-                    self?.errorMessage = "Failed to cancel appointment: \(error.localizedDescription)"
                 }
             }
         }
     }
+
+    // MARK: - Remove Conversation
+    func removeConversation(translatorId: String) {
+        conversations.removeAll { $0.translatorId == translatorId }
+        print("🗑️ Removed conversation for translator: \(translatorId)")
+    }
+
     
-    // ✨ FIXED: Show latest 3 translators from allTranslators (unfiltered)
-    // This is used in DeafHome "Available Translators" section
-    // It will ALWAYS show the latest added translators regardless of level filter
+
+    // MARK: - Latest Translators
     var limitedTranslators: [TranslatorData] {
         Array(allTranslators.prefix(3))
     }

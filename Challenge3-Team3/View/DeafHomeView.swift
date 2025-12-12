@@ -3,26 +3,38 @@ import SwiftUI
 
 struct DeafHome: View {
     @EnvironmentObject private var appStateManager: AppStateManager
-    @EnvironmentObject private var authViewModel: AuthViewModel        
+    @EnvironmentObject private var authViewModel: AuthViewModel            // 👈 NEW
     @StateObject private var viewModel = TranslationViewModel()
     @Environment(\.layoutDirection) var layoutDirection
     @Binding var deafName: String
     @State private var hasInitializedUser = false
     @State private var isHelp: Bool = false
+
     @AppStorage("deafUserId") private var deafUserId: String = ""
     
     // UI only
     @State private var floatingPulse = false
+    @State private var goToChat = false
+
 
     var body: some View {
         ZStack {
+            
+            NavigationLink(
+                destination: MessagesView(viewModel: viewModel),
+                isActive: $goToChat
+            ) {
+                EmptyView()
+            }
+            .hidden()
+
             // subtle two-tone background
             LinearGradient(gradient: Gradient(colors: [Color(hex: "F7F9FF"), Color(hex: "F2F6FF")]),
                            startPoint: .topLeading, endPoint: .bottomTrailing)
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                HeaderView(deafName: $deafName) // name unchanged
+                HeaderView(deafName: $deafName, viewModel: viewModel) // name unchanged
                     .padding(.horizontal, 16)
                     .padding(.bottom, 6)
                     // soft rounded rectangle behind header for depth
@@ -100,26 +112,28 @@ struct DeafHome: View {
         .onAppear {
             if deafUserId.isEmpty {
                 deafUserId = UUID().uuidString
-                print("Generated new user ID: \(deafUserId)")
             }
 
-            guard !hasInitializedUser else {
-                print("DeafHome appeared - already initialized")
-                return
-            }
+            viewModel.setDeafUser(userId: deafUserId, name: deafName)
 
-            if !deafName.isEmpty {
-                viewModel.setDeafUser(userId: deafUserId, name: deafName)
-                hasInitializedUser = true
-            } else {
-                print("deafName is empty on appear")
-            }
+            viewModel.fetchTranslators()
+            viewModel.fetchUserAppointments()
         }
+        
+        
+        
         .onChange(of: deafName) { newName in
             guard !hasInitializedUser, !newName.isEmpty else { return }
             viewModel.setDeafUser(userId: deafUserId, name: newName)
             hasInitializedUser = true
         }
+        
+        .onChange(of: viewModel.openChatWith) { newValue in
+            if newValue != nil {
+                goToChat = true
+            }
+        }
+
         .navigationBarBackButtonHidden(true)
         .environment(\.layoutDirection, .rightToLeft) // تم التغيير إلى RTL
     }
@@ -130,6 +144,7 @@ struct HeaderView: View {
     @EnvironmentObject private var appStateManager: AppStateManager
     @EnvironmentObject private var authViewModel: AuthViewModel
     @Binding var deafName: String
+    @ObservedObject var viewModel: TranslationViewModel
     @State private var showDeleteAlert = false
     @AppStorage("deafUserId") private var deafUserId: String = ""
 
@@ -142,6 +157,7 @@ struct HeaderView: View {
                 Text("مرحبًا،")
                     .font(.system(size: 19, weight: .regular))
                     .foregroundColor(Color(hex: "666666"))
+
                 
                 Text(deafName.isEmpty ? "" : "👋🏼 \(deafName)")
                     .font(.system(size: 19, weight: .semibold))
@@ -152,8 +168,7 @@ struct HeaderView: View {
 
             HStack (spacing: 24) {
                 NavigationLink {
-                    MessagesView()
-              
+                    MessagesView(viewModel: viewModel)
 
                     
                 } label: {
@@ -223,12 +238,12 @@ struct HeaderView: View {
         //.padding(.vertical, 8)
         .padding(.top, 32)
         
-//        HStack{
-//            Text(deafName.isEmpty ? "" : deafName)
-//                .font(.system(size: 18, weight: .semibold))
-//                .foregroundColor(Color(hex: "0B1A66"))
-//            Spacer()
-//        }
+        HStack{
+            Text(deafName.isEmpty ? "المستخدم" : deafName)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(Color(hex: "0B1A66"))
+            Spacer()
+        }
     }
 }
 
@@ -569,7 +584,7 @@ struct TranslatorCard: View {
             // Left side: avatar + info
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 12) {
-                    if translator.gender == "أنثى" {
+                    if translator.gender == "Female" {
                         Image("femaleIcon")
                             .resizable()
                             .renderingMode(.template)
@@ -718,7 +733,7 @@ struct TranslatorCard: View {
         }
         .sheet(isPresented: $showRequistSheet) {
             RequistSheet(translator: translator, viewModel: viewModel)
-                .presentationDetents([.large, .large])
+                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.hidden)
         }
     }
