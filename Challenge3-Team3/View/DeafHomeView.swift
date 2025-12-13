@@ -79,34 +79,34 @@ struct DeafHome: View {
             }
 
             // help button (inside DeafHome body)
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    Button {
-                        isHelp = true
-                    } label: {
-                        
-                        RoundedRectangle(cornerRadius: 16)
-//                            .fill(LinearGradient(gradient: Gradient(colors: [Color(hex: "0D189F"), Color(hex: "0A1280")]), startPoint: .topLeading, endPoint: .bottomTrailing))
-                            .fill(.red)
-                            .frame(width: 64, height: 64)
-                            .shadow(color: Color(hex: "0D189F").opacity(0.22), radius: 14, x: 0, y: 8)
-                            .overlay(
-                                VStack(spacing: 0) {
-                                    Image(systemName: "sos")
-                                        .font(.system(size: 24))
-                                        .foregroundColor(.white)
-                                }
-                            )
-                    }
-                    .buttonStyle(.plain)
-                    .sheet(isPresented: $isHelp) {
-                        HelpSheet() // your sheet view
-                    }
-                    .padding()
-                }
-            }
+//            VStack {
+//                Spacer()
+//                HStack {
+//                    Spacer()
+//                    Button {
+//                        isHelp = true
+//                    } label: {
+//                        
+//                        RoundedRectangle(cornerRadius: 16)
+////                            .fill(LinearGradient(gradient: Gradient(colors: [Color(hex: "0D189F"), Color(hex: "0A1280")]), startPoint: .topLeading, endPoint: .bottomTrailing))
+//                            .fill(.red)
+//                            .frame(width: 64, height: 64)
+//                            .shadow(color: Color(hex: "0D189F").opacity(0.22), radius: 14, x: 0, y: 8)
+//                            .overlay(
+//                                VStack(spacing: 0) {
+//                                    Image(systemName: "sos")
+//                                        .font(.system(size: 24))
+//                                        .foregroundColor(.white)
+//                                }
+//                            )
+//                    }
+//                    .buttonStyle(.plain)
+//                    .sheet(isPresented: $isHelp) {
+//                        HelpSheet() // your sheet view
+//                    }
+//                    .padding()
+//                }
+//            }
 
         }
         .onAppear {
@@ -238,12 +238,6 @@ struct HeaderView: View {
         //.padding(.vertical, 8)
         .padding(.top, 32)
         
-        HStack{
-            Text(deafName.isEmpty ? "المستخدم" : deafName)
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(Color(hex: "0B1A66"))
-            Spacer()
-        }
     }
 }
 
@@ -365,7 +359,7 @@ struct AppointmentCard: View {
             HStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(spacing: 12) {
-                        if translator.gender == "Female" {
+                        if translator.gender == "أنثى" {
                             Image("femaleIcon")
                                 .resizable()
                                 .renderingMode(.template)
@@ -584,7 +578,7 @@ struct TranslatorCard: View {
             // Left side: avatar + info
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 12) {
-                    if translator.gender == "Female" {
+                    if translator.gender == "أنثى" {
                         Image("femaleIcon")
                             .resizable()
                             .renderingMode(.template)
