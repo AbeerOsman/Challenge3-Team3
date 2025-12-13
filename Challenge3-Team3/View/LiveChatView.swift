@@ -49,13 +49,20 @@ struct LiveChatView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                HStack {
-                    Text(recipientName)
-                        .font(.system(size: 16))
+                HStack(spacing: 8) {
                     
-                    Image(systemName: "person.crop.circle.fill")
-                        .foregroundColor(.primary1)
-                        .font(.system(size: 30))
+                   
+                    Circle()
+                        .fill(Color.darkblue)
+                        .frame(width: 36, height: 36)
+                        .overlay(
+                            Text(String(recipientName.prefix(1)))
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.white)
+                        )
+
+                    Text(recipientName)
+                        .font(.system(size: 17, weight: .bold))
                 }
             }
         }
@@ -159,7 +166,7 @@ struct LiveChatView: View {
     // MARK: - Bottom Input Bar Component
     private var bottomInputBar: some View {
         HStack {
-            // Updated video button
+           
             Button {
                 viewModel.showAppleLoginSheet = true
             } label: {
@@ -169,7 +176,7 @@ struct LiveChatView: View {
             }
 
             HStack {
-                TextField("Text Message", text: $viewModel.messageText)
+                TextField("اكتب رسالة...", text: $viewModel.messageText)
                     .font(.callout)
                     .foregroundColor(.primary)
                     .accentColor(.darkblue)
@@ -198,11 +205,12 @@ struct LiveChatView: View {
 #Preview {
     NavigationStack {
         LiveChatView(
-            currentUserId: "user123",
-            currentUserName: "Me",
-            recipientUserId: "user456",
-            recipientName: "John Doe",
-            recipientContact: "+966501234567"
+            currentUserId: "1",
+            currentUserName: "أنا",
+            recipientUserId: "2",
+            recipientName: "المترجم",
+            recipientContact: ""
         )
+        .environment(\.layoutDirection, .rightToLeft)
     }
 }

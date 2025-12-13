@@ -8,16 +8,20 @@ struct Conversation: Identifiable {
     let translatorName: String
     let lastMessage: String
     let timestamp: Date
+    let gender: String
     
     init(translatorId: String,
          translatorName: String,
          lastMessage: String = "تم إنشاء المحادثة",
-         timestamp: Date = Date()) {
+         timestamp: Date = Date(),
+         gender: String = "ذكر"
+    ) {
         self.id = UUID().uuidString
         self.translatorId = translatorId
         self.translatorName = translatorName
         self.lastMessage = lastMessage
         self.timestamp = timestamp
+        self.gender = gender
     }
 }
 

@@ -3,7 +3,7 @@ import SwiftUI
 
 struct DeafHome: View {
     @EnvironmentObject private var appStateManager: AppStateManager
-    @EnvironmentObject private var authViewModel: AuthViewModel            // 👈 NEW
+    @EnvironmentObject private var authViewModel: AuthViewModel            
     @StateObject private var viewModel = TranslationViewModel()
     @Environment(\.layoutDirection) var layoutDirection
     @Binding var deafName: String
@@ -99,7 +99,7 @@ struct DeafHome: View {
                                 }
                             )
                     }
-                    .buttonStyle(.plain) // prevents default button styling
+                    .buttonStyle(.plain)
                     .sheet(isPresented: $isHelp) {
                         HelpSheet() // your sheet view
                     }
@@ -134,7 +134,7 @@ struct DeafHome: View {
         }
 
         .navigationBarBackButtonHidden(true)
-        .environment(\.layoutDirection, .rightToLeft) // تم التغيير إلى RTL
+        .environment(\.layoutDirection, .rightToLeft)
     }
 }
 
