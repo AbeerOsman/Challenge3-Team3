@@ -5,6 +5,16 @@
 //  Created by Abeer Jeilani Osman  on 04/06/1447 AH.
 //
 import SwiftUI
+
+// MARK: - Translator Level Enum
+enum TranslatorLevel: String {
+    case beginner = "مبتدئ"
+    case intermediate = "متوسط"
+    case advanced = "متقدم"
+    
+    var display: String { rawValue }
+}
+
 struct AllTranslatorsView: View {
     @ObservedObject var viewModel: TranslationViewModel
     @Environment(\.scenePhase) var scenePhase
@@ -26,7 +36,7 @@ struct AllTranslatorsView: View {
             }
         }
         .background(Color(hex: "F2F2F2"))
-        .environment(\.layoutDirection, .rightToLeft) // RTL
+        .environment(\.layoutDirection, .rightToLeft)
         .navigationTitle("المترجمون المتاحون")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
@@ -38,6 +48,7 @@ struct AllTranslatorsView: View {
         }
     }
 }
+
 // MARK: - Translator Cards View (Show ALL translators)
 struct TranslatorCardsView: View {
     @ObservedObject var viewModel: TranslationViewModel
@@ -134,6 +145,7 @@ struct TranslatorCardsView: View {
         }
     }
 }
+
 struct LevelFilterView: View {
     @ObservedObject var viewModel: TranslationViewModel
     var body: some View {
@@ -146,9 +158,9 @@ struct LevelFilterView: View {
             HStack(spacing: 8) {
                 FilterButton(
                     title: "مبتدئ",
-                    isSelected: viewModel.selectedLevel == .beginner
+                    isSelected: viewModel.selectedLevel?.rawValue == TranslatorLevel.beginner.rawValue
                 ) {
-                    if viewModel.selectedLevel == .beginner {
+                    if viewModel.selectedLevel?.rawValue == TranslatorLevel.beginner.rawValue {
                         viewModel.clearFilter()
                     } else {
                         viewModel.filterByLevel(.beginner)
@@ -156,9 +168,9 @@ struct LevelFilterView: View {
                 }
                 FilterButton(
                     title: "متوسط",
-                    isSelected: viewModel.selectedLevel == .intermediate
+                    isSelected: viewModel.selectedLevel?.rawValue == TranslatorLevel.intermediate.rawValue
                 ) {
-                    if viewModel.selectedLevel == .intermediate {
+                    if viewModel.selectedLevel?.rawValue == TranslatorLevel.intermediate.rawValue {
                         viewModel.clearFilter()
                     } else {
                         viewModel.filterByLevel(.intermediate)
@@ -166,9 +178,9 @@ struct LevelFilterView: View {
                 }
                 FilterButton(
                     title: "متقدم",
-                    isSelected: viewModel.selectedLevel == .advanced
+                    isSelected: viewModel.selectedLevel?.rawValue == TranslatorLevel.advanced.rawValue
                 ) {
-                    if viewModel.selectedLevel == .advanced {
+                    if viewModel.selectedLevel?.rawValue == TranslatorLevel.advanced.rawValue {
                         viewModel.clearFilter()
                     } else {
                         viewModel.filterByLevel(.advanced)
@@ -179,6 +191,7 @@ struct LevelFilterView: View {
         }
     }
 }
+
 // MARK: - Filter Button
 struct FilterButton: View {
     let title: String
@@ -201,11 +214,10 @@ struct FilterButton: View {
         }
     }
 }
+
 #Preview {
     NavigationStack {
         AllTranslatorsView(viewModel: TranslationViewModel())
-            .environmentObject(TranslationViewModel())
-            .environment(\.layoutDirection, .rightToLeft
-            )
+            .environment(\.layoutDirection, .rightToLeft)
     }
 }

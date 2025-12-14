@@ -3,7 +3,7 @@ import FirebaseFirestore
 import Combine
 import UserNotifications
 
-class LiveChatViewModel: ObservableObject {
+class TranslatorLiveChatViewModel: ObservableObject {
     
     @Published var messages: [Message] = []
     @Published var messageText: String = ""
@@ -28,22 +28,18 @@ class LiveChatViewModel: ObservableObject {
          currentUserName: String,
          recipientUserId: String,
          recipientName: String,
-         recipientContact: String) {
+         chatRoomId: String) {
         
         self.currentUserId = currentUserId
         self.currentUserName = currentUserName
         self.recipientUserId = recipientUserId
         self.recipientName = recipientName
+        self.chatRoomId = chatRoomId
         
-        // Create chatRoomId the SAME way on both sides
-        self.chatRoomId = [currentUserId, recipientUserId]
-            .sorted()
-            .joined(separator: "_")
-        
-        print("🔥 LiveChatViewModel initialized")
-        print("   Current User: \(currentUserName) (\(currentUserId))")
-        print("   Recipient: \(recipientName) (\(recipientUserId))")
-        print("   Chat Room ID: \(self.chatRoomId)")
+        print("🔥 TranslatorLiveChatViewModel initialized")
+        print("   Current User (Translator): \(currentUserName) (\(currentUserId))")
+        print("   Recipient (Deaf User): \(recipientName) (\(recipientUserId))")
+        print("   Chat Room ID: \(chatRoomId)")
         
         requestNotificationPermissions()
         loadMessages()
@@ -80,7 +76,7 @@ class LiveChatViewModel: ObservableObject {
             return
         }
         
-        print("📤 Attempting to send message...")
+        print("📤 Translator attempting to send message...")
         print("   Text: \(messageText)")
         print("   From: \(currentUserName) (\(currentUserId))")
         print("   To Chat Room: \(chatRoomId)")
@@ -105,9 +101,9 @@ class LiveChatViewModel: ObservableObject {
             .document(msg.id)
             .setData(data) { [weak self] error in
                 if let error = error {
-                    print("❌ Error sending message: \(error.localizedDescription)")
+                    print("❌ Translator: Error sending message: \(error.localizedDescription)")
                 } else {
-                    print("✅ Message sent successfully to Firestore")
+                    print("✅ Translator: Message sent successfully to Firestore")
                     print("   Path: chatRooms/\(self?.chatRoomId ?? "N/A")/messages/\(msg.id)")
                     self?.messageText = ""
                 }
@@ -115,7 +111,7 @@ class LiveChatViewModel: ObservableObject {
     }
 
     func loadMessages() {
-        print("🎧 Setting up message listener...")
+        print("🎧 Translator: Setting up message listener...")
         print("   Chat Room ID: \(chatRoomId)")
         
         messagesListener?.remove()
@@ -128,16 +124,16 @@ class LiveChatViewModel: ObservableObject {
                 guard let self = self else { return }
                 
                 if let error = error {
-                    print("❌ Error listening to messages: \(error.localizedDescription)")
+                    print("❌ Translator: Error listening to messages: \(error.localizedDescription)")
                     return
                 }
                 
                 guard let documents = snapshot?.documents else {
-                    print("⚠️ No documents in snapshot")
+                    print("⚠️ Translator: No documents in snapshot")
                     return
                 }
                 
-                print("📦 Received snapshot with \(documents.count) documents")
+                print("📦 Translator: Received snapshot with \(documents.count) documents")
                 
                 let newMessages = documents.compactMap { doc -> Message? in
                     let data = doc.data()
@@ -147,7 +143,7 @@ class LiveChatViewModel: ObservableObject {
                           let senderId = data["senderId"] as? String,
                           let senderName = data["senderName"] as? String,
                           let timestamp = data["timestamp"] as? Timestamp else {
-                        print("⚠️ Failed to decode message from doc: \(doc.documentID)")
+                        print("⚠️ Translator: Failed to decode message from doc: \(doc.documentID)")
                         return nil
                     }
                     
@@ -160,7 +156,7 @@ class LiveChatViewModel: ObservableObject {
                     )
                 }
                 
-                print("✅ Successfully decoded \(newMessages.count) messages")
+                print("✅ Translator: Successfully decoded \(newMessages.count) messages")
                 newMessages.forEach { msg in
                     print("   - \(msg.senderName): \(msg.text)")
                 }
@@ -168,7 +164,7 @@ class LiveChatViewModel: ObservableObject {
                 if newMessages.count > self.lastMessageCount,
                    let latest = newMessages.last,
                    latest.senderId == self.recipientUserId {
-                    print("🔔 New message from recipient!")
+                    print("🔔 Translator: New message from deaf user!")
                     self.notifyNewMessage(from: latest.senderName, messageText: latest.text)
                 }
                 
@@ -211,6 +207,6 @@ class LiveChatViewModel: ObservableObject {
     
     deinit {
         messagesListener?.remove()
-        print("🧹 LiveChatViewModel deinitialized, listeners removed")
+        print("🧹 TranslatorLiveChatViewModel deinitialized, listeners removed")
     }
 }

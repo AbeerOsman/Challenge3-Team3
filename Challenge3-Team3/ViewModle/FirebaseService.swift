@@ -57,7 +57,7 @@ class FirebaseService {
                         category = data["plan"] as? String ?? ""
                     }
                     
-                    // ✅ NEW: Handle multiple careers
+                    // Handle multiple careers
                     var careersArray: [String] = []
                     var careerDisplayString = ""
                     
@@ -65,7 +65,6 @@ class FirebaseService {
                         careersArray = careersFromFirebase.filter { !$0.isEmpty && $0 != "بدون" }
                         careerDisplayString = careersArray.joined(separator: "، ")
                     } else if let singleCareer = data["career"] as? String {
-                        // Fallback for old data format
                         if !singleCareer.isEmpty && singleCareer != "بدون" {
                             careersArray = [singleCareer]
                             careerDisplayString = singleCareer
@@ -76,16 +75,20 @@ class FirebaseService {
                         return nil
                     }
                     
+                    // ✅ Get Firebase UID - use the document ID which IS the Firebase UID
+                    let firebaseUID = doc.documentID
+                    
                     return TranslatorData(
                         id: doc.documentID,
+                        firebaseUID: firebaseUID,  // ✅ NEW
                         name: name,
                         gender: gender,
                         age: "\(age)",
                         level: level,
                         price: "\(price)",
                         category: category,
-                        career: careerDisplayString,  // ✅ Display string from array
-                        careers: careersArray  // ✅ Full array
+                        career: careerDisplayString,
+                        careers: careersArray
                     )
                 }
                 
@@ -93,7 +96,8 @@ class FirebaseService {
                 completion(.success(translators))
             }
     }
-    
+
+    // Same update for fetchTranslatorsByLevel
     func fetchTranslatorsByLevel(level: String, completion: @escaping (Result<[TranslatorData], Error>) -> Void) {
         print("🔍 Setting up level filter listener for: \(level)")
         
@@ -138,7 +142,6 @@ class FirebaseService {
                         category = data["plan"] as? String ?? ""
                     }
                     
-                    // ✅ NEW: Handle multiple careers
                     var careersArray: [String] = []
                     var careerDisplayString = ""
                     
@@ -146,7 +149,6 @@ class FirebaseService {
                         careersArray = careersFromFirebase.filter { !$0.isEmpty && $0 != "بدون" }
                         careerDisplayString = careersArray.joined(separator: "، ")
                     } else if let singleCareer = data["career"] as? String {
-                        // Fallback for old data format
                         if !singleCareer.isEmpty && singleCareer != "بدون" {
                             careersArray = [singleCareer]
                             careerDisplayString = singleCareer
@@ -157,16 +159,20 @@ class FirebaseService {
                         return nil
                     }
                     
+                    // ✅ Get Firebase UID
+                    let firebaseUID = doc.documentID
+                    
                     return TranslatorData(
                         id: doc.documentID,
+                        firebaseUID: firebaseUID,  // ✅ NEW
                         name: name,
                         gender: gender,
                         age: "\(age)",
                         level: level,
                         price: "\(price)",
                         category: category,
-                        career: careerDisplayString,  // ✅ Display string
-                        careers: careersArray  // ✅ Full array
+                        career: careerDisplayString,
+                        careers: careersArray
                     )
                 }
                 
@@ -175,6 +181,8 @@ class FirebaseService {
     }
     
     // MARK: - Appointments
+    // Replace your createAppointment function with this:
+
     func createAppointment(
         deafUserId: String,
         deafName: String,
@@ -189,7 +197,7 @@ class FirebaseService {
             "deafUserId": deafUserId,
             "deafName": deafName,
             "translatorId": translatorId,
-            "createdAt": FieldValue.serverTimestamp()
+            "createdAt": FieldValue.serverTimestamp()  // ✅ Ensure this is saved
         ]
         
         db.collection("appointments").addDocument(data: appointmentData) { error in
@@ -199,7 +207,7 @@ class FirebaseService {
                 return
             }
             
-            print("✅ Appointment created successfully")
+            print("✅ Appointment created successfully with createdAt timestamp")
             completion(.success("Appointment created"))
         }
     }
@@ -338,4 +346,37 @@ class FirebaseService {
             completion(.success(()))
         }
     }
+    
+    // Add this function to FirebaseService class to debug messages
+
+    func debugCheckMessages(chatRoomId: String) {
+        print("🔍 DEBUG: Checking messages in chatRoom: \(chatRoomId)")
+        
+        db.collection("chatRooms")
+            .document(chatRoomId)
+            .collection("messages")
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("❌ Error checking messages: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let documents = snapshot?.documents else {
+                    print("⚠️ No messages found in chatRoom: \(chatRoomId)")
+                    return
+                }
+                
+                print("📦 Found \(documents.count) messages in chatRoom: \(chatRoomId)")
+                for (index, doc) in documents.enumerated() {
+                    let data = doc.data()
+                    print("   Message \(index + 1):")
+                    print("     ID: \(data["id"] as? String ?? "N/A")")
+                    print("     Text: \(data["text"] as? String ?? "N/A")")
+                    print("     From: \(data["senderName"] as? String ?? "N/A")")
+                    print("     Sender ID: \(data["senderId"] as? String ?? "N/A")")
+                }
+            }
+    }
+
 }
+

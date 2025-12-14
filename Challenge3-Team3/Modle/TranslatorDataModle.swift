@@ -1,9 +1,10 @@
 import Foundation
 import UIKit
 
-// MARK: - TranslatorData (updated to support multiple careers)
+// MARK: - TranslatorData (updated to support multiple careers + Firebase UID)
 struct TranslatorData: Identifiable, Codable, Equatable {
-    let id: String
+    let id: String  // This is the Firestore document ID
+    let firebaseUID: String  // ✅ NEW: Firebase Auth UID
     let name: String
     let gender: String
     let age: String
@@ -11,7 +12,7 @@ struct TranslatorData: Identifiable, Codable, Equatable {
     let price: String
     let category: String
     let career: String   // Display string (joined from careers array)
-    let careers: [String]  // NEW: array of careers from Firebase
+    let careers: [String]  // array of careers from Firebase
     
     // Computed property for display state
     var state: String {
@@ -33,48 +34,4 @@ struct TranslatorData: Identifiable, Codable, Equatable {
             }
         }
     }
-}
-
-// MARK: - Translator model
-struct Translator: Identifiable {
-    let id = UUID()
-    let name: String
-    let priceRange: String
-    let level: TranslatorLevel
-    let experience: String
-    let rating: Double
-    let tags: [String]
-    var isAvailable: Bool
-    let career: String
-}
-
-// MARK: - Translator level
-enum TranslatorLevel: String {
-    case beginner = "مبتدئ"
-    case intermediate = "متوسط"
-    case advanced = "متقدم"
-    
-    var display: String { rawValue }
-}
-
-// MARK: - Appointment Status
-enum AppointmentStatus {
-    case pending
-    case completed
-    case paid
-    
-    var display: String {
-        switch self {
-        case .pending: return "قيد الانتظار"
-        case .completed: return "مكتمل"
-        case .paid: return "مدفوع"
-        }
-    }
-}
-
-// MARK: - Appointment model
-struct Appointment: Identifiable {
-    let id = UUID()
-    let translator: Translator
-    let status: AppointmentStatus
 }
