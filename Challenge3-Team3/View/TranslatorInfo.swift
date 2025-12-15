@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-import SwiftUI
-
 struct TranslatorInfo: View {
     let translator: TranslatorData
     @ObservedObject var viewModel: TranslationViewModel

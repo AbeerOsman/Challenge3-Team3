@@ -9,6 +9,7 @@ struct RequistSheet: View {
     @State private var showSuccessMessage = false
     @State private var isSubmitting = false
     @State private var appear = false
+    @State private var confirmAlert: Bool = false
 
     // ثوابت التخطيط لسهولة التعديل
     private enum Layout {
@@ -149,12 +150,22 @@ struct RequistSheet: View {
 
             // --- تأكيد ونصي صغير
             VStack(spacing: 8) {
-                Text("هل تريد إرسال طلب تواصل؟")
+//                Text("هل تريد إرسال طلب تواصل؟")
+//                    .font(.system(size: 17, weight: .semibold))
+//                    .foregroundColor(Color(hex: "0B1B47"))
+//                    .multilineTextAlignment(.center)
+                
+                Text("تنوية، يرجى الانتباه على التعليمات التالية:")
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundColor(Color(hex: "0B1B47"))
                     .multilineTextAlignment(.center)
 
-                Text("بمجرد الإرسال ستبدأ محادثة تلقائية بينك وبين المترجم.")
+                Text("بمجرد التأكيد، ستبدأ محادثة تلقائية بينك وبين المترجم.")
+                    .font(.system(size: 14))
+                    .foregroundColor(Color(hex: "4B5563"))
+                    .multilineTextAlignment(.center)
+                
+                Text("تكون طريقة دفع رسوم الخدمة الموضحة اعلاه بالساعة بالإتفاق بينك وبين المترجم.")
                     .font(.system(size: 14))
                     .foregroundColor(Color(hex: "4B5563"))
                     .multilineTextAlignment(.center)
@@ -174,17 +185,21 @@ struct RequistSheet: View {
             .padding(.horizontal, Layout.horizontalPadding)
 
             // --- زر التأكيد داخل البطاقة
-            Button(action: { submitRequest() }) {
+            Button {
+                if !isSubmitting{
+                    confirmAlert = true
+                }
+            } label: {
                 HStack {
                     if isSubmitting {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                     } else {
+                        
                         Text("تأكيد طلب التواصل")
                             .font(.system(size: 17, weight: .semibold))
                     }
-                }
-                .frame(maxWidth: .infinity)
+                }                .frame(maxWidth: .infinity)
                 .frame(height: Layout.ctaHeight)
                 .background(
                     LinearGradient(
@@ -199,6 +214,13 @@ struct RequistSheet: View {
             .disabled(isSubmitting)
             .padding(.horizontal, Layout.horizontalPadding)
             .padding(.bottom, 12)
+            .alert("هل تود في بدأ المحادثة وإضافة المترجم الى طلباتك ", isPresented: $confirmAlert) {
+                Button("تراجع", role: .cancel) { }
+                Button("نعم", role: .destructive) {
+                    submitRequest()
+                }
+            }
+
 
         } // card VStack
         .background(Color.white)
