@@ -35,7 +35,7 @@ struct TranslatorProfileView: View {
                                 TextField("أدخل الاسم", text: $viewModel.name)
                                     .textInputAutocapitalization(.words)
                                     .autocorrectionDisabled(true)
-                                    .multilineTextAlignment(.leading)
+                                    .multilineTextAlignment(.trailing)
                                     .padding(12)
                                     .background(Color.white)
                                     .cornerRadius(10)
@@ -65,7 +65,7 @@ struct TranslatorProfileView: View {
 
                                 TextField("أدخل العمر", text: $viewModel.ageText)
                                     .keyboardType(.numberPad)
-                                    .multilineTextAlignment(.leading)
+                                    .multilineTextAlignment(.trailing)
                                     .padding(12)
                                     .background(Color.white)
                                     .cornerRadius(10)

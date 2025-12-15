@@ -93,10 +93,15 @@ struct DeafNameSheet: View {
         // Update binding with trimmed value
         deafName = trimmed
 
-        // Persist profile
+        // ✅ FIXED: Use the correct Firebase UID from authViewModel
+        print("💾 Creating deaf user profile:")
+        print("   Firebase UID: \(authViewModel.firebaseUID)")
+        print("   Deaf Name: \(trimmed)")
+        
+        // ✅ IMPORTANT: This will save to deafUsers collection with the correct UID
         authViewModel.createDeafUserProfile(name: trimmed)
 
-        // Call the onSave callback (which updates AppStateManager)
+        // Call the onSave callback
         onSave?()
 
         // Dismiss sheet

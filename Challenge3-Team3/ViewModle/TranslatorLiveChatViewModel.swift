@@ -34,12 +34,26 @@ class TranslatorLiveChatViewModel: ObservableObject {
         self.currentUserName = currentUserName
         self.recipientUserId = recipientUserId
         self.recipientName = recipientName
-        self.chatRoomId = chatRoomId
+        
+        // If a chatRoomId is passed from metadata, keep it; otherwise fall back to
+        // deterministic generation so both sides land in the same thread.
+        let resolvedChatRoomId = FirebaseService.createChatRoomId(
+            userId1: currentUserId,
+            userId2: recipientUserId
+        )
+        if chatRoomId.isEmpty {
+            self.chatRoomId = resolvedChatRoomId
+        } else {
+            self.chatRoomId = chatRoomId
+            if chatRoomId != resolvedChatRoomId {
+                print("⚠️ TranslatorLiveChatViewModel: incoming chatRoomId (\(chatRoomId)) differs from resolved (\(resolvedChatRoomId)). Keeping provided ID to match stored thread.")
+            }
+        }
         
         print("🔥 TranslatorLiveChatViewModel initialized")
         print("   Current User (Translator): \(currentUserName) (\(currentUserId))")
         print("   Recipient (Deaf User): \(recipientName) (\(recipientUserId))")
-        print("   Chat Room ID: \(chatRoomId)")
+        print("   Chat Room ID: \(self.chatRoomId)")
         
         requestNotificationPermissions()
         loadMessages()
@@ -105,6 +119,17 @@ class TranslatorLiveChatViewModel: ObservableObject {
                 } else {
                     print("✅ Translator: Message sent successfully to Firestore")
                     print("   Path: chatRooms/\(self?.chatRoomId ?? "N/A")/messages/\(msg.id)")
+                    
+                    // ✅ NEW: Update conversation metadata
+                    FirebaseService.shared.createOrUpdateConversation(
+                        deafUserId: self?.recipientUserId ?? "",
+                        deafName: self?.recipientName ?? "",
+                        translatorId: self?.currentUserId ?? "",
+                        translatorName: self?.currentUserName ?? "",
+                        lastMessage: msg.text,
+                        chatRoomId: self?.chatRoomId ?? ""
+                    )
+                    
                     self?.messageText = ""
                 }
             }
@@ -112,7 +137,7 @@ class TranslatorLiveChatViewModel: ObservableObject {
 
     func loadMessages() {
         print("🎧 Translator: Setting up message listener...")
-        print("   Chat Room ID: \(chatRoomId)")
+        print("   Chat Room ID: \(self.chatRoomId)")
         
         messagesListener?.remove()
         

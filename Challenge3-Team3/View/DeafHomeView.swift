@@ -10,7 +10,7 @@ struct DeafHome: View {
     @State private var hasInitializedUser = false
     @State private var isHelp: Bool = false
 
-    @AppStorage("deafUserId") private var deafUserId: String = ""
+//    @AppStorage("deafUserId") private var deafUserId: String = ""
     
     // UI only
     @State private var floatingPulse = false
@@ -110,11 +110,17 @@ struct DeafHome: View {
 
         }
         .onAppear {
-            if deafUserId.isEmpty {
-                deafUserId = UUID().uuidString
+            // ✅ FIXED: Use authViewModel.firebaseUID instead of AppStorage
+            print("🔥 DeafHome onAppear")
+            print("   Firebase UID: \(authViewModel.firebaseUID)")
+            print("   Deaf Name: \(deafName)")
+            
+            if !authViewModel.firebaseUID.isEmpty {
+                viewModel.setDeafUser(userId: authViewModel.firebaseUID, name: deafName)
+                print("✅ Set deaf user with Firebase UID: \(authViewModel.firebaseUID)")
+            } else {
+                print("⚠️ Firebase UID is empty!")
             }
-
-            viewModel.setDeafUser(userId: deafUserId, name: deafName)
 
             viewModel.fetchTranslators()
             viewModel.fetchUserAppointments()
@@ -124,7 +130,7 @@ struct DeafHome: View {
         
         .onChange(of: deafName) { newName in
             guard !hasInitializedUser, !newName.isEmpty else { return }
-            viewModel.setDeafUser(userId: deafUserId, name: newName)
+            viewModel.setDeafUser(userId: authViewModel.firebaseUID, name: newName)
             hasInitializedUser = true
         }
         
@@ -146,7 +152,7 @@ struct HeaderView: View {
     @Binding var deafName: String
     @ObservedObject var viewModel: TranslationViewModel
     @State private var showDeleteAlert = false
-    @AppStorage("deafUserId") private var deafUserId: String = ""
+//    @AppStorage("deafUserId") private var deafUserId: String = ""
 
     // UI-only pulse
     @State private var pulse = false
@@ -196,8 +202,8 @@ struct HeaderView: View {
 
                     Button("حذف الحساب", role: .destructive) {
                         // 🔥 Step 1: Delete all appointments first
-                        print("🗑️ Starting cascade deletion for user: \(deafUserId)")
-                        FirebaseService.shared.deleteAllUserAppointments(userId: deafUserId) { result in
+                        print("🗑️ Starting cascade deletion for user: \(authViewModel.firebaseUID)")
+                        FirebaseService.shared.deleteAllUserAppointments(userId: authViewModel.firebaseUID) { result in
                             switch result {
                             case .success:
                                 print("✅ All appointments deleted successfully")
@@ -353,6 +359,7 @@ struct AppointmentCard: View {
     @ObservedObject var viewModel: TranslationViewModel
     @State private var pressed = false
     @State private var showTranslatorInfo = false
+    @State private var showCancelAlert = false
 
     var body: some View {
         ZStack {
@@ -436,12 +443,7 @@ struct AppointmentCard: View {
                     }
                     
                     Button {
-                        if let appointmentId = appointment.id {
-                            print("Cancel button pressed for: \(appointmentId)")
-                            viewModel.cancelAppointment(appointmentId: appointmentId)
-                        } else {
-                            print("Appointment ID is nil!")
-                        }
+                        showCancelAlert = true
                     } label: {
                         HStack {
                             Image(systemName: "xmark.circle.fill")
@@ -459,6 +461,19 @@ struct AppointmentCard: View {
                         )
                         .cornerRadius(14)
                         .shadow(color: Color.red.opacity(0.3), radius: 8, x: 0, y: 4)
+                    }
+                    .alert("هل انت متأكد من إزالة المترجم؟", isPresented: $showCancelAlert) {
+                        Button("نعم، احذف المترجم والرسائل", role: .destructive) {
+                            if let appointmentId = appointment.id {
+                                print("Cancel button confirmed for: \(appointmentId)")
+                                viewModel.cancelAppointment(appointmentId: appointmentId)
+                            } else {
+                                print("Appointment ID is nil!")
+                            }
+                        }
+                        Button("تراجع", role: .cancel) { }
+                    } message: {
+                        Text("جميع الرسائل مع هذا المترجم ستحذف تلقائيًا.")
                     }
                 }
                 .frame(minWidth: 120, alignment: .trailing)
@@ -572,6 +587,7 @@ struct TranslatorCard: View {
     @ObservedObject var viewModel: TranslationViewModel
     @State private var showRequistSheet = false
     @State private var showDuplicateAlert = false
+    @State private var showCancelAlert = false
 
     var body: some View {
         HStack(spacing: 0) {

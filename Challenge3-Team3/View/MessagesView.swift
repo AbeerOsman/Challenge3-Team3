@@ -15,7 +15,7 @@ struct MessagesView: View {
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                if viewModel.conversations.isEmpty {
+                if viewModel.conversations.isEmpty && viewModel.previousConversations.isEmpty {
                     Spacer()
                     Image(systemName: "bubble.left.and.text.bubble.right")
                         .resizable()
@@ -37,17 +37,43 @@ struct MessagesView: View {
                 } else {
                     ScrollView {
                         LazyVStack(spacing: 12) {
+                            // ✅ Active conversations with appointments
                             ForEach(viewModel.conversations) { conversation in
                                 NavigationLink {
                                     LiveChatView(
                                         currentUserId: viewModel.deafUserId,
                                         currentUserName: viewModel.deafName,
-                                        recipientUserId: conversation.translatorId,
+                                        recipientUserId: conversation.translatorId,  // ✅ This is correct - now has firebaseUID
                                         recipientName: conversation.translatorName,
                                         recipientContact: "0000000000"
                                     )
                                 } label: {
                                     ConversationCard(conversation: conversation)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                            
+                            // ✅ NEW: Previous conversations (no active appointment)
+                            ForEach(viewModel.previousConversations) { prevConv in
+                                NavigationLink {
+                                    LiveChatView(
+                                        currentUserId: viewModel.deafUserId,
+                                        currentUserName: viewModel.deafName,
+                                        recipientUserId: prevConv.translatorId,  // ✅ This is correct - ConversationMetadata.translatorId is firebaseUID
+                                        recipientName: prevConv.translatorName,
+                                        recipientContact: "0000000000"
+                                    )
+                                } label: {
+                                    ConversationCard(
+                                        conversation: Conversation(
+                                            translatorId: prevConv.translatorId,  // ✅ Correct
+                                            translatorName: prevConv.translatorName,
+                                            lastMessage: prevConv.lastMessage,
+                                            timestamp: prevConv.timestamp,
+                                            gender: "ذكر"
+                                        )
+                                    )
+                                    .opacity(0.7) // Visual indicator for inactive chats
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
@@ -65,6 +91,8 @@ struct MessagesView: View {
         .toolbarBackground(.hidden, for: .navigationBar)
         .onAppear {
             viewModel.openChatWith = nil
+            // ✅ Load previous conversations on appear
+            viewModel.loadPreviousConversations()
         }
     }
 }

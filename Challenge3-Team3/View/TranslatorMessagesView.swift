@@ -19,7 +19,7 @@ struct TranslatorMessagesView: View {
                 if viewModel.isLoading {
                     ProgressView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if viewModel.conversations.isEmpty {
+                } else if viewModel.conversations.isEmpty && viewModel.previousConversations.isEmpty {
                     VStack(spacing: 12) {
                         Image(systemName: "bubble.left.and.text.bubble.right")
                             .resizable()
@@ -42,6 +42,7 @@ struct TranslatorMessagesView: View {
                 } else {
                     ScrollView {
                         LazyVStack(spacing: 12) {
+                            // ✅ Active conversations with appointments
                             ForEach(viewModel.conversations) { conversation in
                                 NavigationLink {
                                     TranslatorLiveChatView(
@@ -53,6 +54,32 @@ struct TranslatorMessagesView: View {
                                     )
                                 } label: {
                                     TranslatorConversationCard(conversation: conversation)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                            
+                            // ✅ NEW: Previous conversations (no active appointment)
+                            ForEach(viewModel.previousConversations) { prevConv in
+                                NavigationLink {
+                                    TranslatorLiveChatView(
+                                        currentUserId: viewModel.translatorId,
+                                        currentUserName: viewModel.translatorName,
+                                        recipientUserId: prevConv.deafUserId,
+                                        recipientName: prevConv.deafName,
+                                        chatRoomId: prevConv.chatRoomId
+                                    )
+                                } label: {
+                                    TranslatorConversationCard(
+                                        conversation: TranslatorConversation(
+                                            deafUserId: prevConv.deafUserId,
+                                            deafName: prevConv.deafName,
+                                            deafGender: "ذكر",
+                                            lastMessage: prevConv.lastMessage,
+                                            timestamp: prevConv.timestamp,
+                                            chatRoomId: prevConv.chatRoomId
+                                        )
+                                    )
+                                    .opacity(0.7) // Visual indicator for inactive chats
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
@@ -68,19 +95,41 @@ struct TranslatorMessagesView: View {
         }
         .environment(\.layoutDirection, .rightToLeft)
         .onAppear {
-            print("🔍 TranslatorMessagesView onAppear called")
+            print("🔔 TranslatorMessagesView onAppear called")
+            
+            // ✅ ADD THIS LINE - Call debug method
+            FirebaseService.shared.debugCheckTranslatorIds()
+            
             print("   Auth User: \(authViewModel.user?.uid ?? "NIL")")
             print("   Display Name: \(authViewModel.user?.displayName ?? "NIL")")
             
-            // Get current Firebase user
+            // Get current Firebase user, but prefer the stored profile document ID
+            // so the translator uses the same ID that deaf users see in lists.
             if let user = Auth.auth().currentUser {
+                let defaults = UserDefaults.standard
+                let storedTranslatorId = defaults.string(forKey: "userDocumentID") ?? ""
+                let storedProfile = defaults.dictionary(forKey: "userLocalProfile")
+                let storedName = (storedProfile?["name"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+                
+                let resolvedTranslatorId = storedTranslatorId.isEmpty ? user.uid : storedTranslatorId
+                let resolvedTranslatorName = (storedName?.isEmpty == false) ? storedName! : (user.displayName ?? "المترجم")
+                
                 print("✅ Found current Firebase user: \(user.uid)")
                 print("   Display Name: \(user.displayName ?? "No display name")")
+                if !storedTranslatorId.isEmpty {
+                    print("   Using stored translator profile ID (shared with deaf users): \(storedTranslatorId)")
+                }
+                if let storedName = storedName {
+                    print("   Using stored profile name: \(storedName)")
+                }
                 
                 viewModel.setTranslator(
-                    translatorId: user.uid,
-                    translatorName: user.displayName ?? "المترجم"
+                    translatorId: resolvedTranslatorId,
+                    translatorName: resolvedTranslatorName
                 )
+                
+                // ✅ Load previous conversations
+                viewModel.loadPreviousConversations()
             } else {
                 print("❌ No Firebase user found!")
             }

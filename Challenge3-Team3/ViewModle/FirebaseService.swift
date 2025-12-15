@@ -12,9 +12,16 @@ class FirebaseService {
         print("🔥 FirebaseService initialized")
     }
     
+    // MARK: - Chat Room ID Helper (✅ FIXED)
+    static func createChatRoomId(userId1: String, userId2: String) -> String {
+        return [userId1, userId2]
+            .sorted()
+            .joined(separator: "_")
+    }
+    
     // MARK: - Translators (users collection)
     func fetchTranslators(completion: @escaping (Result<[TranslatorData], Error>) -> Void) {
-        print("🔍 Setting up translators listener...")
+        print("🔔 Setting up translators listener...")
         
         translatorsListener?.remove()
         
@@ -80,7 +87,7 @@ class FirebaseService {
                     
                     return TranslatorData(
                         id: doc.documentID,
-                        firebaseUID: firebaseUID,  // ✅ NEW
+                        firebaseUID: firebaseUID,
                         name: name,
                         gender: gender,
                         age: "\(age)",
@@ -99,7 +106,7 @@ class FirebaseService {
 
     // Same update for fetchTranslatorsByLevel
     func fetchTranslatorsByLevel(level: String, completion: @escaping (Result<[TranslatorData], Error>) -> Void) {
-        print("🔍 Setting up level filter listener for: \(level)")
+        print("🔔 Setting up level filter listener for: \(level)")
         
         translatorsListener?.remove()
         
@@ -164,7 +171,7 @@ class FirebaseService {
                     
                     return TranslatorData(
                         id: doc.documentID,
-                        firebaseUID: firebaseUID,  // ✅ NEW
+                        firebaseUID: firebaseUID,
                         name: name,
                         gender: gender,
                         age: "\(age)",
@@ -181,15 +188,13 @@ class FirebaseService {
     }
     
     // MARK: - Appointments
-    // Replace your createAppointment function with this:
-
     func createAppointment(
         deafUserId: String,
         deafName: String,
         translatorId: String,
         completion: @escaping (Result<String, Error>) -> Void
     ) {
-        print("📝 Creating appointment request...")
+        print("🔔 Creating appointment request...")
         print("   Deaf User: \(deafName) (\(deafUserId))")
         print("   Translator ID: \(translatorId)")
         
@@ -197,7 +202,7 @@ class FirebaseService {
             "deafUserId": deafUserId,
             "deafName": deafName,
             "translatorId": translatorId,
-            "createdAt": FieldValue.serverTimestamp()  // ✅ Ensure this is saved
+            "createdAt": FieldValue.serverTimestamp()
         ]
         
         db.collection("appointments").addDocument(data: appointmentData) { error in
@@ -216,7 +221,7 @@ class FirebaseService {
         userId: String,
         completion: @escaping (Result<[AppointmentRequest], Error>) -> Void
     ) {
-        print("🔍 Setting up appointments listener for user: \(userId)")
+        print("🔔 Setting up appointments listener for user: \(userId)")
         
         appointmentsListener?.remove()
         
@@ -322,6 +327,116 @@ class FirebaseService {
             }
     }
     
+    // MARK: - Conversation Metadata (✅ NEW)
+    func createOrUpdateConversation(
+        deafUserId: String,
+        deafName: String,
+        translatorId: String,
+        translatorName: String,
+        lastMessage: String,
+        chatRoomId: String
+    ) {
+        print("💾 Creating/Updating conversation metadata for: \\(chatRoomId)")
+        
+        let conversationData: [String: Any] = [
+            "deafUserId": deafUserId,
+            "deafName": deafName,
+            "translatorId": translatorId,
+            "translatorName": translatorName,
+            "lastMessage": lastMessage,
+            "timestamp": FieldValue.serverTimestamp(),
+            "chatRoomId": chatRoomId
+        ]
+        
+        db.collection("conversations")
+            .document(chatRoomId)
+            .setData(conversationData, merge: true) { error in
+                if let error = error {
+                    print("❌ Error updating conversation: \\(error.localizedDescription)")
+                } else {
+                    print("✅ Conversation metadata updated")
+                }
+            }
+        
+        // Keep a lightweight chat room document so both roles can reopen the same
+        // thread and see the last message even before loading messages.
+        let chatRoomData: [String: Any] = [
+            "participants": [deafUserId, translatorId],
+            "deafUserId": deafUserId,
+            "deafName": deafName,
+            "translatorId": translatorId,
+            "translatorName": translatorName,
+            "lastMessage": lastMessage,
+            "updatedAt": FieldValue.serverTimestamp()
+        ]
+        
+        db.collection("chatRooms")
+            .document(chatRoomId)
+            .setData(chatRoomData, merge: true) { error in
+                if let error = error {
+                    print("⚠️ Error updating chatRoom metadata: \\(error.localizedDescription)")
+                } else {
+                    print("✅ chatRoom metadata synced")
+                }
+            }
+    }
+    
+    // MARK: - Load Previous Conversations (✅ NEW)
+    func loadPreviousConversations(
+        deafUserId: String,
+        completion: @escaping (Result<[ConversationMetadata], Error>) -> Void
+    ) {
+        print("🔔 Loading previous conversations for deaf user: \(deafUserId)")
+        
+        db.collection("conversations")
+            .whereField("deafUserId", isEqualTo: deafUserId)
+            .order(by: "timestamp", descending: true)
+            .addSnapshotListener { snapshot, error in
+                if let error = error {
+                    print("❌ Error loading conversations: \(error.localizedDescription)")
+                    completion(.failure(error))
+                    return
+                }
+                
+                guard let documents = snapshot?.documents else {
+                    print("⚠️ No previous conversations found")
+                    completion(.success([]))
+                    return
+                }
+                
+                print("📦 Found \(documents.count) previous conversations")
+                
+                let conversations = documents.compactMap { doc -> ConversationMetadata? in
+                    let data = doc.data()
+                    
+                    guard let deafUserId = data["deafUserId"] as? String,
+                          let deafName = data["deafName"] as? String,
+                          let translatorId = data["translatorId"] as? String,
+                          let translatorName = data["translatorName"] as? String,
+                          let lastMessage = data["lastMessage"] as? String else {
+                        return nil
+                    }
+                    
+                    let timestamp = (data["timestamp"] as? Timestamp)?.dateValue() ?? Date()
+                    let chatRoomId = doc.documentID
+                    
+                    return ConversationMetadata(
+                        id: doc.documentID,
+                        deafUserId: deafUserId,
+                        deafName: deafName,
+                        translatorId: translatorId,
+                        translatorName: translatorName,
+                        lastMessage: lastMessage,
+                        timestamp: timestamp,
+                        chatRoomId: chatRoomId
+                    )
+                }
+                
+                print("✅ Successfully loaded \(conversations.count) conversations")
+                completion(.success(conversations))
+            }
+    }
+    
     func removeAllListeners() {
         print("🧹 Removing all Firebase listeners")
         translatorsListener?.remove()
@@ -347,8 +462,6 @@ class FirebaseService {
         }
     }
     
-    // Add this function to FirebaseService class to debug messages
-
     func debugCheckMessages(chatRoomId: String) {
         print("🔍 DEBUG: Checking messages in chatRoom: \(chatRoomId)")
         
@@ -377,6 +490,209 @@ class FirebaseService {
                 }
             }
     }
+    
+    // delete old messages when an appointment is removed
+    func deleteConversationMessages(chatRoomId: String) {
+        db.collection("chatRooms")
+            .document(chatRoomId)
+            .collection("messages")
+            .getDocuments { snapshot, _ in
+                let batch = self.db.batch()
+                snapshot?.documents.forEach { doc in
+                    batch.deleteDocument(doc.reference)
+                }
+                batch.commit()
+            }
+    }
+    
+    // Delete a single conversation metadata doc
+    func deleteConversationDocument(chatRoomId: String) {
+        db.collection("conversations").document(chatRoomId).delete { error in
+            if let error = error {
+                print("⚠️ Error deleting conversation doc: \(error.localizedDescription)")
+            } else {
+                print("✅ Conversation doc deleted: \(chatRoomId)")
+            }
+        }
+    }
+    
+    // Delete chatRoom shell document
+    func deleteChatRoomDocument(chatRoomId: String) {
+        db.collection("chatRooms").document(chatRoomId).delete { error in
+            if let error = error {
+                print("⚠️ Error deleting chatRoom doc: \(error.localizedDescription)")
+            } else {
+                print("✅ chatRoom doc deleted: \(chatRoomId)")
+            }
+        }
+    }
+    
+    // Delete all chats for a deaf user (messages + chatRoom + conversation)
+    func deleteAllChatsForDeaf(userId: String, completion: ((Result<Void, Error>) -> Void)? = nil) {
+        print("🧹 Deleting all chats for deaf user: \(userId)")
+        db.collection("conversations")
+            .whereField("deafUserId", isEqualTo: userId)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("❌ Error fetching conversations for deletion: \(error.localizedDescription)")
+                    completion?(.failure(error))
+                    return
+                }
+                
+                guard let docs = snapshot?.documents else {
+                    completion?(.success(()))
+                    return
+                }
+                
+                let group = DispatchGroup()
+                for doc in docs {
+                    let chatRoomId = doc.documentID
+                    group.enter()
+                    self.deleteConversationMessages(chatRoomId: chatRoomId)
+                    self.deleteChatRoomDocument(chatRoomId: chatRoomId)
+                    self.deleteConversationDocument(chatRoomId: chatRoomId)
+                    group.leave()
+                }
+                
+                group.notify(queue: .main) {
+                    print("✅ Deleted \(docs.count) chat threads for deaf user \(userId)")
+                    completion?(.success(()))
+                }
+            }
+    }
+    
+    // Delete all chats for a translator but leave a notice in conversation docs
+    func deleteAllChatsForTranslator(userId: String, completion: ((Result<Void, Error>) -> Void)? = nil) {
+        print("🧹 Deleting all chats for translator: \(userId)")
+        db.collection("conversations")
+            .whereField("translatorId", isEqualTo: userId)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("❌ Error fetching conversations for translator deletion: \(error.localizedDescription)")
+                    completion?(.failure(error))
+                    return
+                }
+                
+                guard let docs = snapshot?.documents else {
+                    completion?(.success(()))
+                    return
+                }
+                
+                let group = DispatchGroup()
+                for doc in docs {
+                    let chatRoomId = doc.documentID
+                    group.enter()
+                    // wipe messages + chatRoom
+                    self.deleteConversationMessages(chatRoomId: chatRoomId)
+                    self.deleteChatRoomDocument(chatRoomId: chatRoomId)
+                    // leave notice so deaf user knows translator deleted account
+                    let notice: [String: Any] = [
+                        "lastMessage": "هذا المترجم قام بحذف حسابه والرسائل",
+                        "translatorDeleted": true,
+                        "timestamp": FieldValue.serverTimestamp()
+                    ]
+                    self.db.collection("conversations").document(chatRoomId).setData(notice, merge: true) { _ in
+                        group.leave()
+                    }
+                }
+                
+                group.notify(queue: .main) {
+                    print("✅ Deleted chat threads for translator \(userId) and left notices")
+                    completion?(.success(()))
+                }
+            }
+    }
+    
+    
 
+    // Delete a single message from a chat room
+    func deleteMessage(chatRoomId: String, messageId: String) {
+        db.collection("chatRooms")
+            .document(chatRoomId)
+            .collection("messages")
+            .document(messageId)
+            .delete { error in
+                if let error = error {
+                    print("⚠️ Error deleting message: \(error.localizedDescription)")
+                } else {
+                    print("✅ Deleted message \(messageId) in chatRoom \(chatRoomId)")
+                }
+            }
+    }
+    // Add this debug method to FirebaseService.swift
+
+    func debugCheckTranslatorIds() {
+        print("\n🔍 DEBUG: Checking all translator IDs in system...\n")
+        
+        // Check users collection
+        db.collection("users").getDocuments { snapshot, error in
+            if let error = error {
+                print("❌ Error fetching users: \(error)")
+                return
+            }
+            
+            print("📋 USERS COLLECTION:")
+            snapshot?.documents.forEach { doc in
+                let data = doc.data()
+                let name = data["name"] as? String ?? "Unknown"
+                let uid = doc.documentID
+                print("   Document ID (Firebase UID): \(uid)")
+                print("   Name: \(name)")
+                print("   ---")
+            }
+        }
+        
+        // Check appointments collection
+        db.collection("appointments").getDocuments { snapshot, error in
+            if let error = error {
+                print("❌ Error fetching appointments: \(error)")
+                return
+            }
+            
+            print("\n📋 APPOINTMENTS COLLECTION:")
+            snapshot?.documents.forEach { doc in
+                let data = doc.data()
+                let deafName = data["deafName"] as? String ?? "Unknown"
+                let translatorId = data["translatorId"] as? String ?? "Unknown"
+                print("   Appointment ID: \(doc.documentID)")
+                print("   Deaf User: \(deafName)")
+                print("   Translator ID (stored): \(translatorId)")
+                print("   ---")
+            }
+        }
+        
+        // Check conversations collection
+        db.collection("conversations").getDocuments { snapshot, error in
+            if let error = error {
+                print("❌ Error fetching conversations: \(error)")
+                return
+            }
+            
+            print("\n📋 CONVERSATIONS COLLECTION:")
+            snapshot?.documents.forEach { doc in
+                let data = doc.data()
+                let deafName = data["deafName"] as? String ?? "Unknown"
+                let translatorId = data["translatorId"] as? String ?? "Unknown"
+                let translatorName = data["translatorName"] as? String ?? "Unknown"
+                print("   Chat Room ID: \(doc.documentID)")
+                print("   Deaf User: \(deafName)")
+                print("   Translator ID: \(translatorId)")
+                print("   Translator Name: \(translatorName)")
+                print("   ---")
+            }
+        }
+    }
+}
+
+// MARK: - Conversation Metadata Model (✅ NEW)
+struct ConversationMetadata: Identifiable {
+    let id: String
+    let deafUserId: String
+    let deafName: String
+    let translatorId: String
+    let translatorName: String
+    let lastMessage: String
+    let timestamp: Date
+    let chatRoomId: String
 }
 

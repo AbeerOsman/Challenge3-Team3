@@ -35,10 +35,11 @@ class LiveChatViewModel: ObservableObject {
         self.recipientUserId = recipientUserId
         self.recipientName = recipientName
         
-        // Create chatRoomId the SAME way on both sides
-        self.chatRoomId = [currentUserId, recipientUserId]
-            .sorted()
-            .joined(separator: "_")
+        // ✅ FIXED: Use consistent chatRoomId creation
+        self.chatRoomId = FirebaseService.createChatRoomId(
+            userId1: currentUserId,
+            userId2: recipientUserId
+        )
         
         print("🔥 LiveChatViewModel initialized")
         print("   Current User: \(currentUserName) (\(currentUserId))")
@@ -109,6 +110,17 @@ class LiveChatViewModel: ObservableObject {
                 } else {
                     print("✅ Message sent successfully to Firestore")
                     print("   Path: chatRooms/\(self?.chatRoomId ?? "N/A")/messages/\(msg.id)")
+                    
+                    // ✅ NEW: Update conversation metadata
+                    FirebaseService.shared.createOrUpdateConversation(
+                        deafUserId: self?.currentUserId ?? "",
+                        deafName: self?.currentUserName ?? "",
+                        translatorId: self?.recipientUserId ?? "",
+                        translatorName: self?.recipientName ?? "",
+                        lastMessage: msg.text,
+                        chatRoomId: self?.chatRoomId ?? ""
+                    )
+                    
                     self?.messageText = ""
                 }
             }
