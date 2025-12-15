@@ -36,7 +36,7 @@ struct RequistSheet: View {
 
                 Spacer(minLength: 5)
 
-                // زري التأكيد والإلغاء
+                // زر الإلغاء فقط يبقى خارج البطاقة
                 ctaArea
             }
             .padding(.top, 98)
@@ -172,18 +172,8 @@ struct RequistSheet: View {
                 }
             }
             .padding(.horizontal, Layout.horizontalPadding)
-            .padding(.bottom, 8)
 
-        } // card VStack
-        .background(Color.white)
-        .cornerRadius(Layout.cardCorner)
-        .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 8)
-        .padding(.horizontal, 12)
-    }
-
-    // MARK: - CTA Area
-    private var ctaArea: some View {
-        VStack(spacing: 12) {
+            // --- زر التأكيد داخل البطاقة
             Button(action: { submitRequest() }) {
                 HStack {
                     if isSubmitting {
@@ -196,13 +186,30 @@ struct RequistSheet: View {
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: Layout.ctaHeight)
-                .background(LinearGradient(gradient: Gradient(colors: [Color(hex: "0D189F"), Color(hex: "0A1280")]), startPoint: .leading, endPoint: .trailing))
+                .background(
+                    LinearGradient(
+                        gradient: Gradient(colors: [Color(hex: "0D189F"), Color(hex: "0A1280")]),
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
                 .foregroundColor(.white)
                 .cornerRadius(12)
             }
             .disabled(isSubmitting)
             .padding(.horizontal, Layout.horizontalPadding)
+            .padding(.bottom, 12)
 
+        } // card VStack
+        .background(Color.white)
+        .cornerRadius(Layout.cardCorner)
+        .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 8)
+        .padding(.horizontal, 12)
+    }
+
+    // MARK: - CTA Area
+    private var ctaArea: some View {
+        VStack(spacing: 12) {
             Button(action: { dismiss() }) {
                 Text("إلغاء")
                     .font(.system(size: 15, weight: .medium))
