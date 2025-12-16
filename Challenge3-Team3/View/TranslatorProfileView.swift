@@ -10,6 +10,8 @@ struct TranslatorProfileView: View {
     @State private var showCustomAlert = false
     @State private var alertMessage = ""
     @State private var showCareerDropdown = false
+    @State private var isTermsAccepted = false
+    @State private var showTerms = false
 
     private let backgroundColor = Color(red: 240/255, green: 245/255, blue: 255/255)
     private let cardColor = Color(red: 221/255, green: 232/255, blue: 253/255)
@@ -24,7 +26,6 @@ struct TranslatorProfileView: View {
                     Spacer()
                     inputCard {
                         VStack(alignment: .trailing, spacing: 12) {
-
                             // Name
                             VStack(alignment: .trailing, spacing: 6) {
                                 Text("الاسم")
@@ -201,6 +202,42 @@ struct TranslatorProfileView: View {
                         }
                     }
                     .padding(.horizontal)
+                    
+                    // MARK: - Terms & Conditions
+                    HStack(spacing: 10) {
+
+                        Button {
+                            isTermsAccepted.toggle()
+                        } label: {
+                            Image(systemName: isTermsAccepted ? "checkmark.square.fill" : "square")
+                                .font(.system(size: 20))
+                                .foregroundColor(
+                                    isTermsAccepted
+                                    ? buttonColor
+                                    : .secondary
+                                )
+                        }
+                        .buttonStyle(.plain)
+
+                        Text("أوافق على")
+                            .font(.system(size: 14))
+                            .foregroundColor(.secondary)
+
+                        Button {
+                            showTerms = true
+                        } label: {
+                            Text("الشروط والأحكام")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(buttonColor)
+                                .underline()
+                        }
+                        .buttonStyle(.plain)
+
+                        Spacer()
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 4)
+
 
                     // Save Button
                     VStack(spacing: 8) {
@@ -208,7 +245,7 @@ struct TranslatorProfileView: View {
                             Task {
                                 await viewModel.saveUserProfile()
                                 showCustomAlertWithMessage()
-                                // Update parent view model if provided
+
                                 if let parent = parentViewModel {
                                     await parent.loadUserProfile()
                                 }
@@ -218,16 +255,29 @@ struct TranslatorProfileView: View {
                                 if viewModel.isSaving {
                                     ProgressView().tint(.white)
                                 }
+
                                 Text("حفظ الملف الشخصي")
                                     .fontWeight(.semibold)
                             }
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(buttonColor)
+                            .background(
+                                isTermsAccepted && !viewModel.isSaving
+                                ? LinearGradient(
+                                    colors: [Color(hex: "0D189F"), Color(hex: "0A1280")],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                  )
+                                : LinearGradient(
+                                    colors: [Color.gray.opacity(0.4), Color.gray.opacity(0.4)],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                  )
+                            )
                             .foregroundColor(.white)
                             .cornerRadius(14)
                         }
-                        .disabled(viewModel.isSaving)
+                        .disabled(viewModel.isSaving || !isTermsAccepted)
                     }
                     .padding(.horizontal)
                     .padding(.bottom, 24)
@@ -245,6 +295,10 @@ struct TranslatorProfileView: View {
                 }
             }
         }
+        .sheet(isPresented: $showTerms) {
+            TermsPopupView(viewModel: TermsViewModel())
+        }
+        
         .navigationTitle("تعديل الملف الشخصي")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
