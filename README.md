@@ -1,76 +1,120 @@
-Yumnak 🤟
-Yumnak is a smart mobile application designed to facilitate communication between Deaf individuals and Sign Language Interpreters through a simple, secure, and accessible technical platform.
-The app allows users to create profiles, browse interpreters, and communicate directly, aiming to reduce communication barriers and promote digital inclusion.
-📱 Project Overview
-Deaf individuals often face daily challenges in communication, especially in situations where qualified sign language interpreters are required quickly.
-Yumnak acts as a technical bridge:
-Between Deaf users who need sign language interpreters
-And Sign Language Interpreters seeking flexible work opportunities
-The application functions solely as a communication platform and does not provide translation services itself.
-🎯 Project Goals
-Enable Deaf individuals to easily access sign language interpreters
-Provide an organized platform for interpreters to showcase their profiles and expertise
-Support independence and ease of use
-Promote digital inclusion and accessibility for the Deaf community
-✨ Key Features
-👤 For Interpreters
-Create and edit a personal profile
-Specify gender, age, level, and career path
-Choose a service plan (Free / Paid)
-Set an hourly rate for paid plans
-Accept Terms & Conditions before saving the profile
-🧏‍♂️ For Deaf Users
-Browse interpreter profiles
-Select interpreters based on individual needs
-Communicate directly with interpreters
-🛠️ Technologies Used
-SwiftUI – User Interface development
-MVVM Architecture – Clean separation of UI and business logic
-Combine – State management and data binding
-NavigationStack & Sheets – Navigation and modal presentation
-Right-to-Left (RTL) Support – Full Arabic language support
-Firebase – Backend services including:
-Secure storage of user data and profiles
-Real-time data updates
-User state management
-🧱 Project Architecture
-The project follows the MVVM (Model–View–ViewModel) pattern:
-Model: Data models (User, Interpreter, Terms, etc.)
-View: SwiftUI views
-ViewModel: Business logic, validation, and state handling
-This architecture ensures:
-Clean and maintainable code
-Easier testing
-Scalability for future features
-🔐 Terms & Conditions
-The app serves as a technical communication platform only
-Any agreement between a Deaf user and an interpreter is solely their responsibility
-The app holds no legal or financial liability
-Acceptance of the Terms & Conditions is required to access certain features
-🌍 Language Support
-Arabic
-Full Right-to-Left (RTL) layout support
-🚀 Getting Started
-Open the project in Xcode
-Select a simulator or a physical device
-Run ▶️ the application
-📌 Future Enhancements
-Interpreter rating and review system
-In-app video calling
-Dedicated Privacy Policy page
-Enhanced accessibility features
-👩‍💻 Development Team
-This project was developed as an educational and practical experience in iOS development, with a strong focus on accessibility, inclusivity, and user-centered design.
-Team Members
-Eatzaz Hafiz
-🔗 LinkedIn: https://www.linkedin.com/in/eatzaz-hafiz/
-Team Member 2
-🔗 LinkedIn:
-Team Member 3
-🔗 LinkedIn:
-Team Member 4
-🔗 LinkedIn:
-Team Member 5
-🔗 LinkedIn:
-📄 License
-This project is intended for educational and developmental purposes only.
+# Yumnak 🤟
+
+**Yumnak** is a smart application designed to facilitate communication between deaf people and sign language interpreters through a safe and simple platform that allows account creation, profile viewing, and direct interaction between both parties.
+
+---
+
+## 📱 Project Idea
+
+Deaf people face daily communication challenges, especially in situations that require qualified sign language interpreters quickly. **Yumnak** provides a technological bridge:
+
+* Between **deaf individuals** who need sign language interpreters
+* And **sign language interpreters** looking for flexible job opportunities
+
+> The app works only as a communication platform and does not provide direct translation services.
+
+---
+
+## 🎯 App Goals
+
+* Enable deaf users to easily access sign language interpreters
+* Provide an organized platform to display interpreters’ profiles and expertise
+* Support independence and ease of use
+* Promote digital inclusivity and integrate hearing-impaired people into society
+
+---
+
+## ✨ Main Features
+
+### 👤 For Interpreters
+
+* Create and edit personal profile
+* Specify gender, age, level, and career path
+* Choose plan type (free / paid)
+* Set hourly rate (for paid plans)
+* Accept terms and conditions before saving
+
+### 🧏‍♂️ For Deaf Users
+
+* Browse interpreter profiles
+* Select the most suitable interpreter based on need
+* Directly communicate with the interpreter
+
+---
+
+## 🛠️ Technologies Used
+
+* **SwiftUI** – For building user interfaces
+* **MVVM Architecture** – For organized and maintainable code
+* **Combine** – State management and bindings
+* **NavigationStack & Sheets** – Navigation and modal windows
+* **RTL Support** – Full support for Arabic text direction
+
+---
+
+## 🧱 Project Architecture
+
+The project follows the **MVVM** pattern:
+
+* **Model**: Data models (User, Translator, Terms, etc.)
+* **View**: SwiftUI interfaces
+* **ViewModel**: App logic, data validation, state management
+
+This ensures:
+
+* Easy maintenance
+* Code testing
+* Future scalability
+
+---
+
+## 🔐 Terms & Conditions
+
+* The app functions solely as a communication platform
+* Any agreements between deaf users and interpreters are the responsibility of the parties involved
+* The app is not legally or financially responsible
+* Terms and conditions must be accepted to use certain features
+
+---
+
+## 🌍 Language Support
+
+* Arabic
+* Full right-to-left (RTL) text support
+
+---
+
+## 🚀 How to Run
+
+1. Open the project in **Xcode**
+2. Choose a Simulator or a real device
+3. Run ▶️
+
+---
+
+## 📌 Future Improvements
+
+* Add interpreter rating system
+* Support video calls inside the app
+* Add a separate privacy policy
+* Improve accessibility features
+
+---
+
+## 👩‍💻 Developers
+
+* **Eatzaz Hafiz** – [LinkedIn](https://www.linkedin.com/in/eatzaz-hafiz/)  
+* Developer 2 – [LinkedIn](#)  
+* Developer 3 – [LinkedIn](#)  
+* Developer 4 – [LinkedIn](#)  
+* Developer 5 – [LinkedIn](#)  
+
+---
+
+## 📄 License
+
+This project is for educational and development purposes.
+
+---
+
+> **Yumnak** – Where the sign is understood and its voice is heard 🤍
